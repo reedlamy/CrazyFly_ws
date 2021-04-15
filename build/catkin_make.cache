@@ -1,0 +1,2 @@
+NASLab_Crazyflies-master/car:NASLab_Crazyflies-master/crazyflie_cpp:NASLab_Crazyflies-master/crazyflie_description:NASLab_Crazyflies-master/crazyflie_driver:NASLab_Crazyflies-master/crazyflie_scripts:NASLab_Crazyflies-master/crazyflie_tools
+-DCATKIN_DEVEL_PREFIX=/home/reed/CrazyFly_ws/devel -DCMAKE_INSTALL_PREFIX=/home/reed/CrazyFly_ws/install -G Unix Makefiles

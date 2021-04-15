@@ -1,0 +1,91 @@
+#!/usr/bin/env python
+#For Charging Pad 1
+
+import rospy
+from gpiozero import PWMOutputDevice
+import time
+import RPi.GPIO as GPIO
+
+class Motor:
+    GPIO.setwarnings(False)
+    GPIO.setmode(GPIO.BCM)
+
+    DATA_PIN = 16
+    CLK_PIN = 20
+    LATCH_PIN = 21
+
+    GPIO.setup(DATA_PIN, GPIO.OUT)
+    GPIO.setup(LATCH_PIN, GPIO.OUT)
+    GPIO.setup(CLK_PIN, GPIO.OUT)
+
+    PWM1 = PWMOutputDevice(5)
+    PWM2 = PWMOutputDevice(6)
+    PWM3 = PWMOutputDevice(13)
+    PWM4 = PWMOutputDevice(19)
+
+    M3A = 0
+    M2A = 0
+    M1A = 0
+    M1B = 0
+    M2B = 0
+    M4A = 0
+    M3B = 0
+    M4B = 0
+
+    def __init__(self, speed, time):
+        self.speed = speed
+        self.time = time
+
+    def setSpeed(self, l_speed, r_speed):
+        self.PWM1.value = l_speed
+        self.PWM2.value = r_speed
+        self.PWM3.value = l_speed
+        self.PWM4.value = r_speed
+
+    def shiftout(self,pins,sec):
+        GPIO.output(self.LATCH_PIN, 0)
+        for bit in pins:
+            GPIO.output(self.DATA_PIN, bit)
+            GPIO.output(self.CLK_PIN, 1)
+            GPIO.output(self.CLK_PIN, 0)
+        GPIO.output(self.LATCH_PIN, 1)
+        time.sleep(sec)
+
+#SET MOTOR SPEED AND MOVE CAR
+def lin_callback(data):
+	rospy.loginfo(rospy.get_caller_id() + "I heard %f", data.data)
+	lin_speed = data.out
+
+def ang_callback(data):
+	rospy.loginfo(rospy.get_caller_id() + "I heard %f", data.data
+	ang_speed = data.out
+
+def move():
+	rospy.init_node('move', anonymous=True)
+
+	rospy.Subscriber("pid_vel Pad1"), pid, lin_callback) #Check naming convention
+	rospy.Subscriber("pid_rot Pad1"), pid, ang_callback) #Check naming convention
+
+	try:
+                rospy.wait_for_message("/charger_pos Pad1"), PoseStamped, timeout=1) #Check naming convention
+        except rospy.ROSException:
+                rospy.logerr('Could not subscribe to /charger_pos Pad1') + ' message: Timeout') #Check naming convention
+                sys.exit()
+        except rospy.ROSInterruptException:
+                rospy.logerr('USER INTERRUPTION')
+                sys.exit()
+
+#input motor voltage
+        l_speed = lin_speed + ang_speed
+        r_speed = lin_speed - ang_speed
+        motor = [1, 1, 1, 1, 1, 1, 1, 1]
+        Motor.setSpeed(l_speed, r_speed)
+        Motor.shiftout(motor, 0.2)
+	
+	today.spin()
+
+if __name__ == '__main__':
+	try:
+		lin_update()
+	except rospy.ROSInteruptException:
+		pass

@@ -1,0 +1,8 @@
+prefix=/home/reed/CrazyFly_ws/devel
+
+Name: car
+Description: Description of car
+Version: 0.0.0
+Cflags: -I/home/reed/CrazyFly_ws/devel/include
+Libs: -L${prefix}/lib 
+Requires: message_runtime rospy std_msgs

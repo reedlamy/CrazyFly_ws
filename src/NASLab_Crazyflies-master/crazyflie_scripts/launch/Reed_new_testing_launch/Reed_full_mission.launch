@@ -1,0 +1,174 @@
+<?xml version="1.0"?>
+
+<!--
+Author: Reed Lamy, Purdue University, rlamy@purdue.edu
+Author: Chris Moneyron, Purdue University, cmoneyron@gmail.com
+Professor: Nina Mahmoudian, Purdue University, ninam@purdue.edu
+
+Launch file for swarm of Crazyflies
+List each uri as arg and include QTM body name in param 'cf_names' (i.e. CF1)
+-->
+     
+<launch>
+  <!-- List all Crazyflie uris (same channel/data rate but different addresses) -->
+  <arg name="uri1" default="radio://0/80/2M/0xE7E7E7E701" />
+  <arg name="uri2" default="radio://0/80/2M/0xE7E7E7E702" />
+  <arg name="uri3" default="radio://0/80/2M/0xE7E7E7E703" />
+  <arg name="uri4" default="radio://0/80/2M/0xE7E7E7E704" />
+  <arg name="uri5" default="radio://0/80/2M/0xE7E7E7E705" />
+  <arg name="uri6" default="radio://0/80/2M/0xE7E7E7E706" />
+  <arg name="uri7" default="radio://0/80/2M/0xE7E7E7E707" />
+  <arg name="uri8" default="radio://0/80/2M/0xE7E7E7E708" />
+  <arg name="uri9" default="radio://0/80/2M/0xE7E7E7E709" />
+  <arg name="uri10" default="radio://0/80/2M/0xE7E7E7E710" />
+  <arg name="uri11" default="radio://0/80/2M/0xE7E7E7E711" />
+  <arg name="uri12" default="radio://0/80/2M/0xE7E7E7E712" />
+
+
+  <!-- Qualisys Arguments -->
+  <arg name="frame" default="/world" />
+  <arg name="ip" default="192.168.1.117" /> <!-- Qualisys DHCP Advanced Tab -->
+  <arg name="port" default="22223" />
+  
+  <!-- CF Qualisys body names; string format: "CF1,CF2,CF3,CF4,CF5" -->
+  <arg name="cf_names_arg" />
+  <param name="cf_names" value="$(arg cf_names_arg)" />
+
+  <!-- Other passed arguments/parameters -->
+  <arg name="charge_type_arg" />
+  <param name="charge_type" value="$(arg charge_type_arg)" />
+  <arg name="work_width_arg" />
+  <param name="work_width" value="$(arg work_width_arg)" />
+  <arg name="work_length_arg" />
+  <param name="work_length" value="$(arg work_length_arg)" />
+  <arg name="res_arg" />
+  <param name="res" value="$(arg res_arg)" />
+  <arg name="map_name_arg" />
+  <param name="map_name" value="$(arg map_name_arg)" />
+  <arg name="replan_arg" />
+  <param name="replan" value="$(arg replan_arg)" />
+  <arg name="num_chargers_arg" />
+  <param name="num_chargers" value="$(arg num_chargers_arg)" />
+  <param name="record_position" value="false" />
+  
+
+  <include file="$(find crazyflie_driver)/launch/crazyflie_server.launch">
+  </include>
+
+  <!-- Group/Node for each Crazyflie -->
+  <group ns="CF1" if="$(eval 'CF1' in cf_names_arg)">
+    <node pkg="crazyflie_driver" type="crazyflie_add" name="crazyflie_add" output="screen">
+      <param name="uri" value="$(arg uri1)" />
+      <param name="tf_prefix" value="CF1" />
+      <param name="enable_logging_battery" value="True" />
+    </node>
+  </group>
+
+  <group ns="CF2" if="$(eval 'CF2' in cf_names_arg)">
+    <node pkg="crazyflie_driver" type="crazyflie_add" name="crazyflie_add" output="screen">
+      <param name="uri" value="$(arg uri2)" />
+      <param name="tf_prefix" value="CF2" />
+      <param name="enable_logging_battery" value="True" />
+    </node>
+  </group>
+
+  <group ns="CF3" if="$(eval 'CF3' in cf_names_arg)">
+    <node pkg="crazyflie_driver" type="crazyflie_add" name="crazyflie_add" output="screen">
+      <param name="uri" value="$(arg uri3)" />
+      <param name="tf_prefix" value="CF3" />
+      <param name="enable_logging_battery" value="True" />
+    </node>
+  </group>
+
+  <group ns="CF4" if="$(eval 'CF4' in cf_names_arg)">
+    <node pkg="crazyflie_driver" type="crazyflie_add" name="crazyflie_add" output="screen">
+      <param name="uri" value="$(arg uri4)" />
+      <param name="tf_prefix" value="CF4" />
+      <param name="enable_logging_battery" value="True" />
+    </node>
+  </group>
+
+  <group ns="CF5" if="$(eval 'CF5' in cf_names_arg)">
+    <node pkg="crazyflie_driver" type="crazyflie_add" name="crazyflie_add" output="screen">
+      <param name="uri" value="$(arg uri5)" />
+      <param name="tf_prefix" value="CF5" />
+      <param name="enable_logging_battery" value="True" />
+    </node>
+  </group>
+
+  <group ns="CF6" if="$(eval 'CF6' in cf_names_arg)">
+    <node pkg="crazyflie_driver" type="crazyflie_add" name="crazyflie_add" output="screen">
+      <param name="uri" value="$(arg uri6)" />
+      <param name="tf_prefix" value="CF6" />
+      <param name="enable_logging_battery" value="True" />
+    </node>
+  </group>
+
+  <group ns="CF7" if="$(eval 'CF7' in cf_names_arg)">
+    <node pkg="crazyflie_driver" type="crazyflie_add" name="crazyflie_add" output="screen">
+      <param name="uri" value="$(arg uri7)" />
+      <param name="tf_prefix" value="CF7" />
+      <param name="enable_logging_battery" value="True" />
+    </node>
+  </group>
+
+  <group ns="CF8" if="$(eval 'CF8' in cf_names_arg)">
+    <node pkg="crazyflie_driver" type="crazyflie_add" name="crazyflie_add" output="screen">
+      <param name="uri" value="$(arg uri8)" />
+      <param name="tf_prefix" value="CF8" />
+      <param name="enable_logging_battery" value="True" />
+    </node>
+  </group>
+
+  <group ns="CF9" if="$(eval 'CF9' in cf_names_arg)">
+    <node pkg="crazyflie_driver" type="crazyflie_add" name="crazyflie_add" output="screen">
+      <param name="uri" value="$(arg uri9)" />
+      <param name="tf_prefix" value="CF9" />
+      <param name="enable_logging_battery" value="True" />
+    </node>
+  </group>
+
+  <group ns="CF10" if="$(eval 'CF10' in cf_names_arg)">
+    <node pkg="crazyflie_driver" type="crazyflie_add" name="crazyflie_add" output="screen">
+      <param name="uri" value="$(arg uri10)" />
+      <param name="tf_prefix" value="CF10" />
+      <param name="enable_logging_battery" value="True" />
+    </node>
+  </group>
+
+  <group ns="CF11" if="$(eval 'CF11' in cf_names_arg)">
+    <node pkg="crazyflie_driver" type="crazyflie_add" name="crazyflie_add" output="screen">
+      <param name="uri" value="$(arg uri11)" />
+      <param name="tf_prefix" value="CF11" />
+      <param name="enable_logging_battery" value="True" />
+    </node>
+  </group>
+
+  <group ns="CF12" if="$(eval 'CF12' in cf_names_arg)">
+    <node pkg="crazyflie_driver" type="crazyflie_add" name="crazyflie_add" output="screen">
+      <param name="uri" value="$(arg uri12)" />
+      <param name="tf_prefix" value="CF12" />
+      <param name="enable_logging_battery" value="True" />
+    </node>
+  </group>
+  
+
+  <!-- Group/Node for each Mobile Charger -->
+  
+
+  <!-- Node to send external positions from Qualisys -->
+  <node name="cf_qualisys_node" pkg="crazyflie_scripts" type="qualisys_cf_stream.py" output="screen">
+    <param name="ip" value="$(arg ip)" />
+  </node>
+
+  <!-- Node for tracking charging pads -->
+  <node name="charge_qualisys_node" pkg="crazyflie_scripts" type="qualisys_charging_pad_stream.py" output="screen" required="true">
+    <param name="ip" value="$(arg ip)" />
+  </node>
+  
+
+  <!-- Node for Crazyflie swarm controller -->
+  <node name="run_full_mission" pkg="crazyflie_scripts" type="run_full_mission.py" output="screen" required="true">
+  </node>
+
+</launch>

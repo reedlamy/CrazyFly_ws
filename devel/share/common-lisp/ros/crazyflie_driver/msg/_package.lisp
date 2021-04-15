@@ -1,0 +1,23 @@
+(cl:defpackage crazyflie_driver-msg
+  (:use )
+  (:export
+   "<FULLSTATE>"
+   "FULLSTATE"
+   "<GENERICLOGDATA>"
+   "GENERICLOGDATA"
+   "<HOVER>"
+   "HOVER"
+   "<HOVERVEL>"
+   "HOVERVEL"
+   "<LOGBLOCK>"
+   "LOGBLOCK"
+   "<NAMEARRAY>"
+   "NAMEARRAY"
+   "<POSITION>"
+   "POSITION"
+   "<TRAJECTORYPOLYNOMIALPIECE>"
+   "TRAJECTORYPOLYNOMIALPIECE"
+   "<CRTPPACKET>"
+   "CRTPPACKET"
+  ))
+

@@ -1,0 +1,8 @@
+prefix=/home/reed/CrazyFly_ws/devel
+
+Name: crazyflie_cpp
+Description: Description of crazyflie_cpp
+Version: 0.0.1
+Cflags: -I/home/reed/CrazyFly_ws/src/NASLab_Crazyflies-master/crazyflie_cpp/include
+Libs: -L${prefix}/lib -lcrazyflie_cpp
+Requires: 

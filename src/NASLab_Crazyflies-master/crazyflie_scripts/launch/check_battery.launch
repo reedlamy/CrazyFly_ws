@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+
+<!--
+Author: Chris Moneyron, Purdue University, cmoneyron@gmail.com
+Professor: Nina Mahmoudian, Purdue University, ninam@purdue.edu
+
+Launch file to check battery of individual Crazyflie
+Update uri to correct address before running
+-->
+
+<launch>
+  <arg name="uri" default="radio://0/80/2M/0xE7E7E7E702" />
+  <arg name="frame" default="/world" />
+  <arg name="ip" default="192.168.1.166" /> <!-- Qualisys DHCP Advanced Tab -->
+  <arg name="port" default="22223" />
+
+  <include file="$(find crazyflie_driver)/launch/crazyflie_server.launch">
+  </include>
+
+  <group ns="CF">
+    <node pkg="crazyflie_driver" type="crazyflie_add" name="crazyflie_add" output="screen">
+      <param name="uri" value="$(arg uri)" />
+      <param name="tf_prefix" value="CF" />
+      <param name="enable_logging" value="True" />
+    </node>
+
+    <!-- Check battery python script node -->
+    <node name="battery" pkg="crazyflie_scripts" type="check_battery.py" output="screen">
+        <param name="uri" value="$(arg uri)" />
+    </node>
+  </group>
+
+</launch>

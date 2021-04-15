@@ -1,0 +1,49 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="uri2" default="radio://0/80/2M/0xE7E7E7E7E7" />
+  <arg name="frame" default="/world" />
+  <arg name="ip" default="192.168.1.104" />
+  <arg name="port" default="22223" />
+
+  
+
+  <arg name="cf_names_arg" value="CF2" />
+  <param name="cf_names" value="$(arg cf_names_arg)" />
+
+  <param name="pad_names" value="" />
+
+
+  <param name="work_width" value="4" />
+  <param name="work_length" value="5" />
+
+  <arg name="charge_type_arg" value="Static" />
+  <param name="charge_type" value="$(arg charge_type_arg)" />
+
+
+  <arg name="replan_arg" value="True"/>
+  <param name="replan" value="$(arg replan_arg)" />
+
+  <include file="$(find crazyflie_driver)/launch/crazyflie_server.launch">
+  </include>
+
+  <group ns="CF2">
+    <node pkg="crazyflie_driver" type="crazyflie_add" name="crazyflie_add" output="screen">
+      <param name="uri" value="$(arg uri2)" />
+      <param name="tf_prefix" value="CF2" />
+      <param name="enable_logging_battery" value="True" />
+    </node>
+  </group>
+
+    <!--remap from="/CF2/CF2/external_position" to="external_position" />
+    <remap from="/CF2/CF2/lost_frames" to="lost_frames" /-->
+    <node name="cf_qualisys_node" pkg="crazyflie_scripts" type="qualisys_cf_stream2.py" output="screen">
+      <param name="ip" value="$(arg ip)" />
+    </node>
+
+    <!--remap from="/CF2/CF2/cmd_stop" to="cmd_stop" />
+    <remap from="/CF2/CF2/cmd_position" to="cmd_position" /-->
+    <node name="run_crazyflies" pkg="crazyflie_scripts" type="run_crazyflies_2.py" output="screen">
+    </node>
+
+
+</launch>

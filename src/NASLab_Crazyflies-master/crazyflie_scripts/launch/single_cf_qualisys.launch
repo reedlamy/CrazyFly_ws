@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="uri1" default="radio://0/80/2M/0xE7E7E7E702" />
+  <arg name="frame" default="/world" />
+  <arg name="ip" default="192.168.1.118" />
+  <arg name="port" default="22223" />
+
+  <include file="$(find crazyflie_driver)/launch/crazyflie_server.launch">
+  </include>
+
+  <group ns="CF2">
+    <node pkg="crazyflie_driver" type="crazyflie_add" name="crazyflie_add" output="screen">
+      <param name="uri" value="$(arg uri1)" />
+      <param name="tf_prefix" value="CF2" />
+      <param name="enable_logging_battery" value="True" />
+    </node>
+    <node name="qualisys_node" pkg="crazyflie_scripts" type="stream_6dof.py" output="screen">
+      <param name="ip" value="$(arg ip)" />
+    </node>
+    <node name="hover" pkg="crazyflie_scripts" type="qualisys_hover.py" output="screen">
+    </node>
+  </group>
+
+</launch>

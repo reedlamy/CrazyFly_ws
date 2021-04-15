@@ -1,0 +1,193 @@
+#!/usr/bin/env python
+# title           :PID.py
+# description     :python pid controller
+# author          :Reeve Lambert & Caner Durmusoglu(https://github.com/ivmech/ivPID/blob/master/PID.py)
+# Rev date        :6/12/2019
+# version         :0.1
+# notes           :
+# python_version  :3.6
+# ==============================================================================
+
+"""This PID CController is largely based upon the PID Controller developed by
+Caner Durmusoglu(https://github.com/ivmech/ivPID/blob/master/PID.py) with """
+import time
+import rospy
+from aut_cat.msg import pid
+
+global pidr
+
+
+class PID:
+    """PID Controller"""
+
+    def __init__(self, p=0.2, i=0.0, d=0.0):
+        """Intialization/Constructor function that sets the proportional, integral, and derivative gains as well as the
+        current time"""
+        self.Kp = p  # set proportional gain
+        self.Ki = i  # set the integral gain
+        self.Kd = d  # set the derivative gain
+        self.sample_time = 0.00  # set a default sample time for user to overwrite later if needed (real time update)
+        self.windup_guard = 0.00  # Initialize windup guard (max value ITerm can be)
+        self.current_time = time.time()  # set the current time as the current time
+        self.last_time = self.current_time  # set the initial last time to the current time
+        self.last_error = 0.00  # initialize a variable to track previous error values
+        self.error = 0.0  # initialize a variable to track current PID error
+        self.ITerm = 0.0  # Initialize the term for integral gan
+        self.PTerm = 0.0  # Initialize the term for Proportional gain
+        self.DTerm = 0.0  # Initialize the term for derivative gain
+        self.SetPoint = 0.0  # Initialize the desired value
+        self.int_error = 0.0  # output the integration error
+        self.output = 0.0  # Initialize the output variable
+        self.feedback_value = 0.0  # Intialize the feedback value that will be updated by the ROS subscription service
+        self. distto = 0.0  # Distance ot target
+        self.delta_error = 0.0  # Create variable to output the delta_error
+        self.delta_time = 0.0  # Create a variable to output the delta time
+        
+##    def clear(self):
+##        """Clears PID computations and coefficients"""
+##        # Clear outputs and goals
+##        self.SetPoint = 0.0
+##        self.last_error = 0.0
+##        # Clear Terms
+##        self.PTerm = 0.0
+##        self.ITerm = 0.0
+##        self.DTerm = 0.0
+##        # Clear Windup Guard
+##        self.int_error = 0.0
+##        self.windup_guard = 20.0
+##        # Clear Output
+##        self.output = 0.0
+
+    def update(self):
+        """Calculates PID value for given reference feedback
+         math: u(t) = K_p e(t) + K_i/int_{0}^{t} e(t)dt + K_d {de}/{dt}
+        """
+        #Calculate max error for use in putput
+##        maxPTerm = self.Kp * 180  # Calculate Proportional term
+##        maxITerm = self.Ki * 180 * 0.1  # Calculate Integral Term
+##        maxDTerm = 0  # calculate derivative term
+        
+        #Error Calc
+        emr = self.feedback_value - self.SetPoint
+        if emr <= -180.0:  # if large neg offset then use sup. angle
+            self.error = emr + 360  # adjust for the smaller CCW angle
+        elif emr>= 180.0:  # if large pos offset then use sup. angle
+            self.error = emr - 360  # adjust for the smaller CW angle
+        else:
+            self.error = emr
+
+        #final catch for eraneous values
+        #if abs(self.error - self.last_error) > 181:  # if there is a sudden huge jump in error
+        self.delta_error = self.error - self.last_error
+
+        # Dt Calc
+        self.current_time = time.time()  # Set the current time
+        self.delta_time = 0.1  # Find change in time = 1/ rospy.rate
+
+        # Calculate Output
+        #if delta_time >= self.sample_time:  # If enough time has elapsed (sample time) then update pid output
+        # Calculate Terms
+        self.PTerm = self.Kp * self.error  # Calculate Proportional term
+        self.ITerm += self.error * self.delta_time  # Calculate Integral Term
+
+        # Determine if the integral term is within the range of -windup_guard to + wind_guard
+        if self.ITerm < -self.windup_guard:  # If it is less than negative guard
+            self.ITerm = -self.windup_guard  # set integral term to  negative guard
+        elif self.ITerm > self.windup_guard:  # IF it is more than guard
+            self.ITerm = self.windup_guard  # set to guard
+
+        # Calculate Differential term if time has passed
+        self.DTerm = 0.0
+        if self.delta_time > 0.0:  # If any time has passed
+            self.DTerm = self.delta_error / self.delta_time  # calculate derivative term
+
+        # Remember last time and last error for next calculation
+        self.last_time = self.current_time  # Set last time as the time at which update last ran (i.e. now)
+        self.last_error = self.error  # Save the error for use upon the next update
+
+        # Compile full output from terms and gain coefficients
+        self.output = self.PTerm + (self.Ki * self.ITerm) + (self.Kd * self.DTerm)
+
+# =================================================================================================
+# The following is ROS Code
+
+
+# Define ROs Publishing parameters
+rospy.init_node('pid_rot', anonymous=False)  # Establish teh node
+rate = rospy.Rate(10)  # refresh rate of GPS data is slow at 10 Hz
+
+def callback(data):
+    """This function will run anytime that data is received from the pidv topic  The function shall:
+    1. log the feedback data that was recieved
+    2. update all values of the controller as per the message data (i.e. kp, setpoint, etc)
+    3. update the pid controller
+    4. reformulate the output pid message for the pidv topic
+    5. re-publish the message"""
+    #rospy.loginfo(rospy.get_caller_id() + " I heard %s", data.fdbck)  # log heard feedback values
+
+    # Update PID constants
+    pidr.SetPoint = data.setpoint  # Update(if any) the setpoint (goal value) for the pid controller
+    pidr.windup_guard = data.wndup  # update (if any) the windup guard value for the pid controller
+    #pidr.last_error = data.err  # pull in the last error.
+    pidr.Kd = data.kd  # Update (if any) the derivative gain constant
+    pidr.Ki = data.ki  # Update (if any) the integral gain constant
+    pidr.Kp = data.kp  # Update (if any) the proportional gain constant
+    pidr.feedback_value = data.fdbck  # Update the distance to the waypoint
+    pidr.ITerm = data.iterm  # take in the reported iterm
+
+    # Update the PID output
+    pidr.update()  # Update the velocity pid controller
+
+def pidupdate():
+    """This script will subscribe to the velocity PID topic and updat ethe PID controller at the rate it is published"""
+    # Set rosnodes up and listener value
+
+    # re-publish the message and wait for next publish
+    	pad_names = rospy.get_param("/pad_names")
+	pad_names = pad_names.split(',')
+
+	messages = []
+	publishers = []
+
+	charger_pos_subscribers = []
+
+	for pad in pad_names:
+		if not pad:
+			continue
+
+        	rospy.Subscriber("pidr_ret" + str(pad[-1]), pid, callback)
+        
+        	# Assemble the response message
+        	msg = pid()  # Create a message as defined by the pid message file
+        	msg.setpoint = pidr.SetPoint  # report on the current setpoint value
+        	msg.laster = pidr.last_error  # report the last error the pid controller had
+        	msg.err = pidr.error  # report on the error the PID controller calculated
+        	msg.wndup = pidr.windup_guard  # Put the windup guard into the message
+        	msg.kp = pidr.Kp  # put the commanded proportional gain constant back into the message
+        	msg.kd = pidr.Kd  # put the commanded derivative gain constant back into the message
+        	msg.ki = pidr.Ki  # put the commanded integral gain constant back into the message
+        	msg.out = pidr.output  # Put the PID controller output command into the message
+        	msg.fdbck = pidr.feedback_value  # Put the recieved feedback value back into the message
+        	msg.iterm = pidr.ITerm  # update the Iterm value in the msg
+        	msg.pterm = pidr.PTerm  # update the Pterm output
+        	msg.dterm = pidr.DTerm  # update the dterm output
+        	msg.delterr = pidr.delta_error  # output delta error
+        	msg.delttime = pidr.delta_time  # output the change in time
+
+		messages.append(msg)
+
+	        # Publish the message
+		pubpid = rospy.Publisher("pidr" + str(pad[-1]), pid, queue_size=10)  # Set up the publisher of pid via pidr topic
+        	pubpid.publish(msg)
+		publishers.append(pubpid)
+        	today.spin()
+
+if __name__ == '__main__':
+    # set controllers
+    pidr = PID()  # set the PID controller up
+
+    # update subscriber
+    try:
+        pidupdate()
+    except rospy.ROSInteruptException:
+        pass

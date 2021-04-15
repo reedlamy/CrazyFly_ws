@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<package>
+  <name>crazyflie_scripts</name>
+  <version>0.0.1</version>
+  <description>Autonomous Scripts for Controlling the Crazyflie (based on whoenig's crazyflie_ros repository)</description>
+
+  <maintainer email="cmoneyron@gmail.com">Chris Moneyron</maintainer>
+
+  <license>MIT</license>
+
+  <url type="website">http://ros.org/wiki/crazyflie</url>
+  <url type="bugtracker">https://github.com/whoenig/crazyflie_ros/issues</url>
+
+  <author email="cmoneyron@gmail.com">Chris Moneyron</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>roscpp</build_depend>
+
+  <run_depend>roscpp</run_depend>
+</package>

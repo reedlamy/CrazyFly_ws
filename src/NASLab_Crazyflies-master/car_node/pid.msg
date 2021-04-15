@@ -1,0 +1,14 @@
+float32 setpoint
+float32 laster
+float32 err
+float32 wndup
+float32 kp
+float32 kd
+float32 ki
+float32 out
+float64 fdbck
+float32 iterm
+float32 pterm
+float32 dterm
+float32 delterr
+float32 delttime

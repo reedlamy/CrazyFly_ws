@@ -1,0 +1,75 @@
+<?xml version="1.0"?>
+
+<!--
+Author: Chris Moneyron, Purdue University, cmoneyron@gmail.com
+Professor: Nina Mahmoudian, Purdue University, ninam@purdue.edu
+
+Launch file for swarm of Uctronics cars
+-->
+
+<launch>
+  <arg name="frame" default="/world" />
+  <arg name="ip" default="192.168.1.141" /> <!-- Qualisys DHCP Advanced Tab -->
+  <arg name="port" default="22223" />
+  <arg name="car1_ip" default="192.168.1.161" />
+  <arg name="car2_ip" default="192.168.1.166" />
+  <arg name="car3_ip" default="192.168.1.167" />
+  <arg name="car4_ip" default="192.168.1.165" />
+  <arg name="car5_ip" default="192.168.1.164" />
+  <arg name="car3_ip" default="192.168.1.163" />
+  <arg name="car4_ip" default="192.168.1.168" />
+  <arg name="car5_ip" default="192.168.1.169" />
+  
+  <arg name="pad_names_arg" value="Pad1,Pad2,Pad3" />
+  <param name="pad_names" value="$(arg pad_names_arg)" />
+
+  <node name="charge_qualisys_node" pkg="crazyflie_scripts" type="qualisys_charging_pad_stream.py" output="screen" required="true">
+    <param name="ip" value="$(arg ip)" />
+  </node>
+
+  <group ns="Car1" if="$(eval 'Pad1' in pad_names_arg)" >
+    <machine name="car1" address="$(arg car1_ip)" env-loader="~/catkin_ws/devel/custom_env.sh" user="pi" password="spring2020" timeout="20.0" />
+    <node machine="car1" name="car_move" pkg="autonomy" type="mobileCharger_move.py" />
+  </group>
+
+  <group ns="Car2" if="$(eval 'Pad2' in pad_names_arg)" >
+    <machine name="car2" address="$(arg car2_ip)" env-loader="~/catkin_ws/devel/custom_env.sh" user="pi" password="spring2020" timeout="20.0" />
+    <node machine="car2" name="car_move" pkg="autonomy" type="mobileCharger_move.py" />
+  </group>
+
+  <group ns="Car3" if="$(eval 'Pad3' in pad_names_arg)" >
+    <machine name="car3" address="$(arg car3_ip)" env-loader="~/catkin_ws/devel/custom_env.sh" user="pi" password="spring2020" timeout="20.0" />
+    <node machine="car3" name="car_move" pkg="autonomy" type="mobileCharger_move.py" />
+  </group>
+
+  <group ns="Car4" if="$(eval 'Pad4' in pad_names_arg)" >
+    <machine name="car4" address="$(arg car4_ip)" env-loader="~/catkin_ws/devel/custom_env.sh" user="pi" password="spring2020" timeout="20.0" />
+    <node machine="car4" name="car_move" pkg="autonomy" type="mobileCharger_move.py" />
+  </group>
+
+  <group ns="Car5" if="$(eval 'Pad5' in pad_names_arg)" >
+    <machine name="car5" address="$(arg car5_ip)" env-loader="~/catkin_ws/devel/custom_env.sh" user="pi" password="spring2020" timeout="20.0" />
+    <node machine="car5" name="car_move" pkg="autonomy" type="mobileCharger_move.py" />
+  </group>
+
+  <group ns="Car6" if="$(eval 'Pad6' in pad_names_arg)" >
+    <machine name="car6" address="$(arg car6_ip)" env-loader="~/catkin_ws/devel/custom_env.sh" user="pi" password="spring2020" timeout="20.0" />
+    <node machine="car6" name="car_move" pkg="autonomy" type="mobileCharger_move.py" />
+  </group>
+
+  <group ns="Car7" if="$(eval 'Pad7' in pad_names_arg)" >
+    <machine name="car7" address="$(arg car7_ip)" env-loader="~/catkin_ws/devel/custom_env.sh" user="pi" password="spring2020" timeout="20.0" />
+    <node machine="car7" name="car_move" pkg="autonomy" type="mobileCharger_move.py" />
+  </group>
+
+  <group ns="Car8" if="$(eval 'Pad8' in pad_names_arg)" >
+    <machine name="car8" address="$(arg car8_ip)" env-loader="~/catkin_ws/devel/custom_env.sh" user="pi" password="spring2020" timeout="20.0" />
+    <node machine="car8" name="car_move" pkg="autonomy" type="mobileCharger_move.py" />
+  </group>
+
+  <node name="lin_ang_vel" pkg="car" type="lin_ang_vel.py" output="screen" required="true" />
+  <node name="PID_rot" pkg="car" type="PID_rot.py" output="screen" required="true" />
+  <node name="PID_vel" pkg="car" type="PID_vel.py" output="screen" required="true" />
+
+  <node name="test_desired_pos" pkg="car" type="test_desired_pos.py" output="screen" />
+</launch>
