@@ -57,7 +57,6 @@ class Crazyflie:
         self.hz = 10
         self.rate = rospy.Rate(self.hz)  # ROS topic publish rate (10 hz)
         self.vz = .5  # Vertical velocity (m/s)
-        self.vy = 30 # Yaw angular velocity (deg/s)
 
         # Space limits (avoid leaving Qualisys MoCap System FOV)
         bound_tol = 0.5  # To account for slight overshoots
@@ -97,12 +96,11 @@ class Crazyflie:
             # rospy.sleep(0.1)
             rospy.set_param(prefix + "/kalman/resetEstimation", 1)
             # rospy.sleep(0.5)
-            rospy.set_param(prefix + "/locSrv/extQuatStdDev", 0.04)
 
             while update_params_count <= 2:
                 # Try to send update of parameters
                 try:
-                    self.update_params(["stabilizer/estimator", "kalman/resetEstimation","locSrv/extQuatStdDev"])
+                    self.update_params(["stabilizer/estimator", "kalman/resetEstimation"])
                     break
                 except:
                     rospy.logwarn("Could not update 1st parameters")
@@ -135,24 +133,6 @@ class Crazyflie:
 
             if update_params_count >= 3:
                 sys.exit()
-
-            ## NEW Update of std dev
-
-            #rospy.set_param(prefix + "/locSrv/extQuatStdDev", 0.04)
-
-            #while update_params_count <= 2:
-                # Try to send update of parameters
-            #    try:
-            #        self.update_params("locSrv/extQuatStdDev")
-            #        break
-            #    except:
-            #        rospy.logwarn("Could not update 3rd parameter")
-            #        update_params_count += 1
-            #        continue
-                    # sys.exit()
-
-            #if update_params_count >= 3:
-            #    sys.exit()
 
             # close persistent service connection
             self.update_params.close()
@@ -301,6 +281,14 @@ class Crazyflie:
                 #rospy.loginfo(self.msg.z)
                 #rospy.loginfo(self.msg.yaw)
 
+                print('ext')
+                print(self.ext_x)
+                print(self.ext_y)
+                print(self.ext_z)
+                print('cmd')
+                print(self.msg.x)
+                print(self.msg.y)
+                print(self.msg.z)
 
 
                 self.msg.header.seq += 1
@@ -436,9 +424,6 @@ class Crazyflie:
         elif self.cf_num == num:
 
             while not rospy.is_shutdown():
-                counter = 0
-                self.msg.yaw = self.ext_yaw
-
                 self.elap_time = 0.0
                 self.start = time.time()
 
@@ -456,64 +441,19 @@ class Crazyflie:
                 elif z > self.zbounds[1]:
                     z = self.zbounds[1]
 
-                # Initialize direction needed to turn
-
-                a_x = math.cos(math.radians(self.ext_yaw))
-                a_y = math.sin(math.radians(self.ext_yaw))
-                b_x = math.cos(math.radians(yaw))
-                b_y = math.sin(math.radians(yaw))
-
-                nz = (a_x*b_y)-(a_y*b_x)
-
-                if nz > 0:
-                    dir = 1 # CCW
-                else:
-                    dir = -1 # CW
-
-                update_dir = 1 # variable used in case crazyflie passes over yaw
-
                 # Command position until within specified tolerance (form of closed loop control)
                 while (not self.emergency_land) and ((abs(x - self.ext_x) > tol) or (abs(y - self.ext_y) > tol)
-                                                     or (abs(z - self.ext_z) > (2 * tol)) or (abs(yaw - self.ext_yaw) > 4)) and self.is_tracking \
+                                                     or (abs(z - self.ext_z) > (2 * tol))) and self.is_tracking \
                         and not self.is_charging:
 
-
-                    if abs(yaw - self.ext_yaw) < self.vy:
-                        self.msg.yaw = yaw
-                        update_dir = 0
-
-                    else:
-                        if update_dir == 0:
-                            a_x = math.cos(math.radians(self.ext_yaw))
-                            a_y = math.sin(math.radians(self.ext_yaw))
-                            b_x = math.cos(math.radians(yaw))
-                            b_y = math.sin(math.radians(yaw))
-
-                            nz = (a_x * b_y) - (a_y * b_x)
-
-                            if nz > 0:
-                                dir = 1  # CCW
-                            else:
-                                dir = -1  # CW
-
-                            update_dir = 1
-
-                        self.msg.yaw = self.msg.yaw + dir*(1/self.hz)*self.vy
-
-                    if self.msg.yaw > 180:
-                        self.msg.yaw = self.msg.yaw-360
-
-                    elif self.msg.yaw < -180:
-                        self.msg.yaw = self.msg.yaw+360
-
                     # Set position to publish
-                    counter += 1/self.hz
                     self.msg.x = x
                     self.msg.y = y
-                    #self.msg.yaw = yaw
+                    self.msg.yaw = yaw
                     self.msg.z = z
                     self.msg.header.seq += 1
                     self.msg.header.stamp = rospy.Time.now()
+
                     # Log info
                     # rospy.loginfo("Going to Position")
                     # rospy.loginfo(self.msg.x)
@@ -1150,21 +1090,21 @@ class Crazyflie:
 
         # Position
 
-        #self.ext_x = data.point.x
-        #self.ext_y = data.point.y
-        #self.ext_z = data.point.z
+        self.ext_x = data.point.x
+        self.ext_y = data.point.y
+        self.ext_z = data.point.z
 
 
         #Quaternians
 
         # Reset current external position variables
-        self.ext_x = data.pose.position.x
-        self.ext_y = data.pose.position.y
-        self.ext_z = data.pose.position.z
+        #self.ext_x = data.pose.position.x
+        #self.ext_y = data.pose.position.y
+        #self.ext_z = data.pose.position.z
 
-        r = R.from_quat([data.pose.orientation.x,data.pose.orientation.y,data.pose.orientation.z,data.pose.orientation.w])
-        rot = r.as_euler('xyz', degrees=True)
-        self.ext_yaw = rot[2]
+        #r = R.from_quat([data.pose.orientation.x,data.pose.orientation.y,data.pose.orientation.z,data.pose.orientation.w])
+        #rot = r.as_euler('xyz', degrees=True)
+        #self.ext_yaw = rot[2]
         # self.ext_x = data.pose.position.x
         # self.ext_y = data.pose.position.y
         # self.ext_z = data.pose.position.z

@@ -57,7 +57,7 @@ class Crazyflie:
         self.hz = 10
         self.rate = rospy.Rate(self.hz)  # ROS topic publish rate (10 hz)
         self.vz = .5  # Vertical velocity (m/s)
-        self.vy = 30 # Yaw angular velocity (deg/s)
+        self.vy = 10 # Yaw angular velocity (deg/s)
 
         # Space limits (avoid leaving Qualisys MoCap System FOV)
         bound_tol = 0.5  # To account for slight overshoots
@@ -301,6 +301,14 @@ class Crazyflie:
                 #rospy.loginfo(self.msg.z)
                 #rospy.loginfo(self.msg.yaw)
 
+                print('ext')
+                print(self.ext_x)
+                print(self.ext_y)
+                print(self.ext_z)
+                print('cmd')
+                print(self.msg.x)
+                print(self.msg.y)
+                print(self.msg.z)
 
 
                 self.msg.header.seq += 1
@@ -437,7 +445,6 @@ class Crazyflie:
 
             while not rospy.is_shutdown():
                 counter = 0
-                self.msg.yaw = self.ext_yaw
 
                 self.elap_time = 0.0
                 self.start = time.time()
@@ -456,61 +463,44 @@ class Crazyflie:
                 elif z > self.zbounds[1]:
                     z = self.zbounds[1]
 
-                # Initialize direction needed to turn
-
-                a_x = math.cos(math.radians(self.ext_yaw))
-                a_y = math.sin(math.radians(self.ext_yaw))
-                b_x = math.cos(math.radians(yaw))
-                b_y = math.sin(math.radians(yaw))
-
-                nz = (a_x*b_y)-(a_y*b_x)
-
-                if nz > 0:
-                    dir = 1 # CCW
-                else:
-                    dir = -1 # CW
-
-                update_dir = 1 # variable used in case crazyflie passes over yaw
-
                 # Command position until within specified tolerance (form of closed loop control)
                 while (not self.emergency_land) and ((abs(x - self.ext_x) > tol) or (abs(y - self.ext_y) > tol)
-                                                     or (abs(z - self.ext_z) > (2 * tol)) or (abs(yaw - self.ext_yaw) > 4)) and self.is_tracking \
+                                                     or (abs(z - self.ext_z) > (2 * tol)) or (abs(yaw - self.ext_yaw) > (4))) and self.is_tracking \
                         and not self.is_charging:
 
 
                     if abs(yaw - self.ext_yaw) < self.vy:
                         self.msg.yaw = yaw
-                        update_dir = 0
 
-                    else:
-                        if update_dir == 0:
-                            a_x = math.cos(math.radians(self.ext_yaw))
-                            a_y = math.sin(math.radians(self.ext_yaw))
-                            b_x = math.cos(math.radians(yaw))
-                            b_y = math.sin(math.radians(yaw))
+                    elif self.ext_yaw >= 0 and yaw >= 0:
+                        if self.ext_yaw > yaw:
+                            self.msg.yaw = self.ext_yaw - counter*self.vy
+                        else:
+                            self.msg.yaw = self.ext_yaw + counter * self.vy
 
-                            nz = (a_x * b_y) - (a_y * b_x)
+                    elif self.ext_yaw <= 0 and yaw <= 0:
+                        if self.ext_yaw > yaw:
+                            self.msg.yaw = self.ext_yaw - counter*self.vy
+                        else:
+                            self.msg.yaw = self.ext_yaw + counter * self.vy
 
-                            if nz > 0:
-                                dir = 1  # CCW
-                            else:
-                                dir = -1  # CW
+                    elif self.ext_yaw >= 0 and yaw <= 0:
+                        if math.cos(math.radians(self.ext_yaw)) >= 0 and math.cos(math.radians(yaw)) >= 0:
+                        elif math.cos(math.radians(self.ext_yaw)) <= 0 and math.cos(math.radians(yaw)) <= 0:
+                        elif math.cos(math.radians(self.ext_yaw)) >= 0 and math.cos(math.radians(yaw)) <= 0:
+                        else:
+    
+                    else: # self.ext_yaw <= 0 and yaw >= 0:
+                        if math.cos(math.radians(self.ext_yaw)) >= 0 and math.cos(math.radians(yaw)) >= 0:
+                        elif math.cos(math.radians(self.ext_yaw)) <= 0 and math.cos(math.radians(yaw)) <= 0:
+                        elif math.cos(math.radians(self.ext_yaw)) >= 0 and math.cos(math.radians(yaw)) <= 0:
+                        else:
 
-                            update_dir = 1
-
-                        self.msg.yaw = self.msg.yaw + dir*(1/self.hz)*self.vy
-
-                    if self.msg.yaw > 180:
-                        self.msg.yaw = self.msg.yaw-360
-
-                    elif self.msg.yaw < -180:
-                        self.msg.yaw = self.msg.yaw+360
 
                     # Set position to publish
-                    counter += 1/self.hz
                     self.msg.x = x
                     self.msg.y = y
-                    #self.msg.yaw = yaw
+                    self.msg.yaw = yaw
                     self.msg.z = z
                     self.msg.header.seq += 1
                     self.msg.header.stamp = rospy.Time.now()
