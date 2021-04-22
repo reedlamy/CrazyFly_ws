@@ -15,7 +15,7 @@ import qtm
 import csv
 import math
 from datetime import datetime
-from geometry_msgs.msg import PoseStamped  # PointStamped
+from geometry_msgs.msg import PointStamped  # PoseStamped
 from scipy.spatial.transform import Rotation as R
 
 
@@ -117,37 +117,37 @@ async def main():
                 # Assign world position components to msg (after converting to meters)
 
                 #Point Stamped
-                #pos_msg = PointStamped()
-                #pos_msg.header.frame_id = worldFrame
-                #pos_msg.header.stamp = rospy.Time.now()
-                #pos_msg.header.seq += 1
-                #pos_msg.point.x = position[0] / 1000
-                #pos_msg.point.y = position[1] / 1000
-                #pos_msg.point.z = position[2] / 1000
-
-                # PoseStamped
-                pos_msg = PoseStamped()
+                pos_msg = PointStamped()
                 pos_msg.header.frame_id = worldFrame
                 pos_msg.header.stamp = rospy.Time.now()
                 pos_msg.header.seq += 1
-                pos_msg.pose.position.x = position[0]/1000
-                pos_msg.pose.position.y = position[1]/1000
-                pos_msg.pose.position.z = position[2]/1000
+                pos_msg.point.x = position[0] / 1000
+                pos_msg.point.y = position[1] / 1000
+                pos_msg.point.z = position[2] / 1000
+
+                # PoseStamped
+                #pos_msg = PoseStamped()
+                #pos_msg.header.frame_id = worldFrame
+                #pos_msg.header.stamp = rospy.Time.now()
+                #pos_msg.header.seq += 1
+                #pos_msg.pose.position.x = position[0]/1000
+                #pos_msg.pose.position.y = position[1]/1000
+                #pos_msg.pose.position.z = position[2]/1000
 
 
                 # Assign orientations to msg (after converting from euler to quaternion)
-                eul_rotation = R.from_euler('xyz', rotation, degrees=True)
-                quat_rotation = eul_rotation.as_quat()
+                # eul_rotation = R.from_euler('xyz', rotation, degrees=True)
+                # quat_rotation = eul_rotation.as_quat()
 
-                pos_msg.pose.orientation.x = quat_rotation[0]
-                pos_msg.pose.orientation.y = quat_rotation[1]
-                pos_msg.pose.orientation.z = quat_rotation[2]
-                pos_msg.pose.orientation.w = quat_rotation[3]
+                # pos_msg.pose.orientation.x = quat_rotation[0]
+                # pos_msg.pose.orientation.y = quat_rotation[1]
+                # pos_msg.pose.orientation.z = quat_rotation[2]
+                # pos_msg.pose.orientation.w = quat_rotation[3]
 
 
                 # Don't publish NaN or Inf value in coordinate data from Qualisys
                 if not any([math.isnan(coord) + math.isinf(coord) for coord in
-                            [pos_msg.pose.position.x, pos_msg.pose.position.y, pos_msg.pose.position.z]]):
+                            [pos_msg.point.x, pos_msg.point.y, pos_msg.point.z]]):
                     publishers[i].publish(pos_msg)
                     messages[i] = pos_msg
 
@@ -180,7 +180,7 @@ async def main():
     # Iterate over all CFs in launch file
     for j in range(len(wanted_bodies)):
 
-        msg = PoseStamped()  # PointStamped: Header header; Point point (float64 x; float64 y; float64 z; float64 yaw)
+        msg = PointStamped()  # PointStamped: Header header; Point point (float64 x; float64 y; float64 z; float64 yaw)
         # msg = PoseStamped()
         msg.header.seq = 0
         msg.header.stamp = rospy.Time.now()
@@ -190,13 +190,13 @@ async def main():
         print(wanted_bodies)
 
         # Publisher name preceded by 'CF#/' due to grouping in launch file
-        # pub = rospy.Publisher(wanted_bodies[j] + "/external_position", PointStamped, queue_size=3)
-        # pub = rospy.Publisher("external_position", PointStamped, queue_size=3)
-        pub = rospy.Publisher(wanted_bodies[j] + "/external_pose", PoseStamped, queue_size=3)
+        pub = rospy.Publisher(wanted_bodies[j] + "/external_position", PointStamped, queue_size=3)
+        #pub = rospy.Publisher("external_position", PointStamped, queue_size=3)
+        # pub = rospy.Publisher(wanted_bodies[j] + "/external_pose", PoseStamped, queue_size=3)
         publishers.append(pub)  # Array containing a publisher for each Crazyflie
 
-        lost_frames_pub = rospy.Publisher(wanted_bodies[j] + "/lost_frames", PoseStamped, queue_size=1)
-        #lost_frames_pub = rospy.Publisher(wanted_bodies[j] + "/lost_frames", PointStamped, queue_size=1)
+        #lost_frames_pub = rospy.Publisher(wanted_bodies[j] + "/lost_frames", PoseStamped, queue_size=1)
+        lost_frames_pub = rospy.Publisher("lost_frames", PointStamped, queue_size=1)
         lost_frames_publishers.append(lost_frames_pub)
     
     # Start streaming frames
