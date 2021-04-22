@@ -11,7 +11,7 @@ import Crazyflie
 import sys
 import signal
 from std_msgs.msg import Float32
-from geometry_msgs.msg import PoseStamped  # PointStamped
+from geometry_msgs.msg import PointStamped  # PoseStamped
 from crazyflie_driver.msg import NameArray
 from threading import Thread, Barrier
 from flight_commands import flight_commands
@@ -26,12 +26,12 @@ def charger_callback(data, charger_idx):
     ros_rate = 1/ros_hz  # ROS topic publish rate (10 hz)
 
     if len(Crazyflie.all_charger_pos[charger_idx]) == 3:
-        x_vel = (data.pose.position.x - Crazyflie.all_charger_pos[charger_idx][0]) / ros_rate
-        y_vel = (data.pose.position.y - Crazyflie.all_charger_pos[charger_idx][1]) / ros_rate
+        x_vel = (data.point.x - Crazyflie.all_charger_pos[charger_idx][0]) / ros_rate
+        y_vel = (data.point.y - Crazyflie.all_charger_pos[charger_idx][1]) / ros_rate
         Crazyflie.all_charger_vel[charger_idx] = [x_vel, y_vel, 0]
 
     # Replace previous charger position in all_charger_pos
-    Crazyflie.all_charger_pos[charger_idx] = [data.pose.position.x, data.pose.position.y, data.pose.position.z]
+    Crazyflie.all_charger_pos[charger_idx] = [data.point.x, data.point.y, data.point.z]
 
 
 # Handling CTRL+C from keyboard
@@ -77,22 +77,22 @@ if __name__ == '__main__':
 
         # Subscribe to external_position topic output by 'qualisys_cf_stream.py'
 
-        #crazy.pos_subscriber = rospy.Subscriber("/" + name + "/external_position", PointStamped, crazy.callback)
-        crazy.pos_subscriber = rospy.Subscriber("/"+ name + "/external_pose", PoseStamped, crazy.callback)
+        crazy.pos_subscriber = rospy.Subscriber("/" + name + "/external_position", PointStamped, crazy.callback)
+        #crazy.pos_subscriber = rospy.Subscriber("/"+ name + "/external_pose", PoseStamped, crazy.callback)
         #crazy.pos_subscriber = rospy.Subscriber("/external_position", PointStamped, crazy.callback)
         # crazy.pos_subscriber = rospy.Subscriber(name + "/external_pose", PoseStamped, crazy.callback)
 
         # Check for successful subscription to external position topic
         if qualisys_connected:
             try:
-                #rospy.wait_for_message("/" + name + "/external_position", PointStamped, timeout=1)
-                rospy.wait_for_message("/" + name + "/external_pose", PoseStamped, timeout=1)
+                rospy.wait_for_message("/" + name + "/external_position", PointStamped, timeout=1)
+                #rospy.wait_for_message("/" + name + "/external_pose", PoseStamped, timeout=1)
                 #rospy.wait_for_message("/external_position", PointStamped, timeout=1)
                 # rospy.wait_for_message(name + "/external_pose", PoseStamped, timeout=1)
             except rospy.ROSException:
                 print("/" + name + "/external_position")
-                #rospy.logerr('Could not subscribe to ' + name + '/external_position message: Timeout')
-                rospy.logerr('Could not subscribe to ' + name + '/external_pose message: Timeout')
+                rospy.logerr('Could not subscribe to ' + name + '/external_position message: Timeout')
+                # rospy.logerr('Could not subscribe to ' + name + '/external_pose message: Timeout')
                 sys.exit()
             except rospy.ROSInterruptException:
                 rospy.logerr('USER INTERRUPTION')
