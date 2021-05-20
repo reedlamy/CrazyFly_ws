@@ -3,6 +3,6 @@ prefix=/home/reed/CrazyFly_ws/install
 Name: crazyflie_scripts
 Description: Description of crazyflie_scripts
 Version: 0.0.1
-Cflags: 
+Cflags: -I${prefix}/include
 Libs: -L${prefix}/lib 
-Requires: roscpp
+Requires: roscpp rospy std_msgs message_runtime

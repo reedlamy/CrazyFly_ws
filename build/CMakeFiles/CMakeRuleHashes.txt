@@ -20,6 +20,7 @@ f4d74c23d1baf23841fd209769ccbd1d /home/reed/CrazyFly_ws/devel/include/crazyflie_
 5a809bc169cb559c5f394377a182188d /home/reed/CrazyFly_ws/devel/include/crazyflie_driver/UploadTrajectory.h
 fcf539ffe1dc3bbe38d6e5d30bddca2f /home/reed/CrazyFly_ws/devel/include/crazyflie_driver/crtpPacket.h
 7d261358e68b03a1f0068fb6cc7aa667 /home/reed/CrazyFly_ws/devel/include/crazyflie_driver/sendPacket.h
+35aa03ec271e373691bbc92ef6542f08 /home/reed/CrazyFly_ws/devel/include/crazyflie_scripts/camera_msg.h
 211d8969ab1ab6d963a2783693e35feb /home/reed/CrazyFly_ws/devel/lib/python2.7/dist-packages/car/msg/__init__.py
 162c0e29066cc8e5db947da0010fa416 /home/reed/CrazyFly_ws/devel/lib/python2.7/dist-packages/car/msg/_pid.py
 3ce2c3f72cece941e52255c68286bd61 /home/reed/CrazyFly_ws/devel/lib/python2.7/dist-packages/crazyflie_driver/msg/_FullState.py
@@ -44,6 +45,8 @@ df7abe1c43c7caca8246d7b4d8434658 /home/reed/CrazyFly_ws/devel/lib/python2.7/dist
 62952f9a7b0b24a70da9a2cf4c58adeb /home/reed/CrazyFly_ws/devel/lib/python2.7/dist-packages/crazyflie_driver/srv/_UploadTrajectory.py
 59b1feb662825594b22445fbb79357de /home/reed/CrazyFly_ws/devel/lib/python2.7/dist-packages/crazyflie_driver/srv/__init__.py
 d502c8d26b4a17b80ce1b6f328e26e8f /home/reed/CrazyFly_ws/devel/lib/python2.7/dist-packages/crazyflie_driver/srv/_sendPacket.py
+aec14479875320f086533f4466781c90 /home/reed/CrazyFly_ws/devel/lib/python2.7/dist-packages/crazyflie_scripts/msg/__init__.py
+d81de4b77d3657edd288843f4ae749a1 /home/reed/CrazyFly_ws/devel/lib/python2.7/dist-packages/crazyflie_scripts/msg/_camera_msg.py
 87a329e875f74117dc055ad21907befe /home/reed/CrazyFly_ws/devel/share/common-lisp/ros/car/msg/pid.lisp
 6e5cf343533b6cbf91a07a420a412faf /home/reed/CrazyFly_ws/devel/share/common-lisp/ros/crazyflie_driver/msg/FullState.lisp
 4bad924d5e8afb13ee081155b8a00b83 /home/reed/CrazyFly_ws/devel/share/common-lisp/ros/crazyflie_driver/msg/GenericLogData.lisp
@@ -65,6 +68,7 @@ dd2a2c50db0e2596235f4fa3651b6c6d /home/reed/CrazyFly_ws/devel/share/common-lisp/
 82df9928e5449f24505df39e18027c82 /home/reed/CrazyFly_ws/devel/share/common-lisp/ros/crazyflie_driver/srv/UpdateParams.lisp
 e15601970031c92ff0bdd09e95f77637 /home/reed/CrazyFly_ws/devel/share/common-lisp/ros/crazyflie_driver/srv/UploadTrajectory.lisp
 3b7220709d4fb6e80995e29c3efb1967 /home/reed/CrazyFly_ws/devel/share/common-lisp/ros/crazyflie_driver/srv/sendPacket.lisp
+586aa7b950cd68a6fb5fabdc2af5b11b /home/reed/CrazyFly_ws/devel/share/common-lisp/ros/crazyflie_scripts/msg/camera_msg.lisp
 54014198b7d620dae34f17113bc9ee49 /home/reed/CrazyFly_ws/devel/share/gennodejs/ros/car/msg/pid.js
 b22a716ada97d2198b763cfc9b6eab5a /home/reed/CrazyFly_ws/devel/share/gennodejs/ros/crazyflie_driver/msg/FullState.js
 d3fef56f8a4918e901040508737e5847 /home/reed/CrazyFly_ws/devel/share/gennodejs/ros/crazyflie_driver/msg/GenericLogData.js
@@ -86,6 +90,7 @@ b3124662a68a3e9d996eb61bde51842f /home/reed/CrazyFly_ws/devel/share/gennodejs/ro
 59d571da525fe3c4d9725c0204363d92 /home/reed/CrazyFly_ws/devel/share/gennodejs/ros/crazyflie_driver/srv/UpdateParams.js
 18f4b5fea622deb608427ae6fddf373e /home/reed/CrazyFly_ws/devel/share/gennodejs/ros/crazyflie_driver/srv/UploadTrajectory.js
 261bdb1422d685f5449c8e1cd4a51884 /home/reed/CrazyFly_ws/devel/share/gennodejs/ros/crazyflie_driver/srv/sendPacket.js
+1d993e66efa3e91070ead34bc1e5b101 /home/reed/CrazyFly_ws/devel/share/gennodejs/ros/crazyflie_scripts/msg/camera_msg.js
 391a429122c28d99c8a643eb0e1a2089 /home/reed/CrazyFly_ws/devel/share/roseus/ros/car/manifest.l
 2399ad762443b7441c0fd008728030d8 /home/reed/CrazyFly_ws/devel/share/roseus/ros/car/msg/pid.l
 4b637703008227734dc0427f3b46a197 /home/reed/CrazyFly_ws/devel/share/roseus/ros/crazyflie_driver/manifest.l
@@ -109,6 +114,8 @@ b3afd0182ef68bf96558c7c5f6478fcd /home/reed/CrazyFly_ws/devel/share/roseus/ros/c
 aa781d1c047ae807acdae7ab15b68ba0 /home/reed/CrazyFly_ws/devel/share/roseus/ros/crazyflie_driver/srv/UpdateParams.l
 a4a9dc4bb58cae5e4cefcf28addf2c3e /home/reed/CrazyFly_ws/devel/share/roseus/ros/crazyflie_driver/srv/UploadTrajectory.l
 c7365a81962ecee79110ca61d0b9e0ae /home/reed/CrazyFly_ws/devel/share/roseus/ros/crazyflie_driver/srv/sendPacket.l
+074fbcbbc21ef445b0fbe031664216c2 /home/reed/CrazyFly_ws/devel/share/roseus/ros/crazyflie_scripts/manifest.l
+d540ba8aa64677bf8886f0a1006fc8f3 /home/reed/CrazyFly_ws/devel/share/roseus/ros/crazyflie_scripts/msg/camera_msg.l
 67e28505dc220c26b80cf640b36fbd38 CMakeFiles/clean_test_results
 316afe47c3b39425c8c1638f883699bd NASLab_Crazyflies-master/car/CMakeFiles/_car_generate_messages_check_deps_pid
 c033f6e294efe410caff01d8befa1ed3 NASLab_Crazyflies-master/car/CMakeFiles/car_generate_messages_cpp
@@ -141,3 +148,9 @@ fdf74dbb117802508400b3011f1356bb NASLab_Crazyflies-master/crazyflie_driver/CMake
 fdf74dbb117802508400b3011f1356bb NASLab_Crazyflies-master/crazyflie_driver/CMakeFiles/crazyflie_driver_generate_messages_lisp
 fdf74dbb117802508400b3011f1356bb NASLab_Crazyflies-master/crazyflie_driver/CMakeFiles/crazyflie_driver_generate_messages_nodejs
 fdf74dbb117802508400b3011f1356bb NASLab_Crazyflies-master/crazyflie_driver/CMakeFiles/crazyflie_driver_generate_messages_py
+207e82b5562149142069d184eb619610 NASLab_Crazyflies-master/crazyflie_scripts/CMakeFiles/_crazyflie_scripts_generate_messages_check_deps_camera_msg
+8b02331ac9bd90d92ced1292aeb0250f NASLab_Crazyflies-master/crazyflie_scripts/CMakeFiles/crazyflie_scripts_generate_messages_cpp
+8b02331ac9bd90d92ced1292aeb0250f NASLab_Crazyflies-master/crazyflie_scripts/CMakeFiles/crazyflie_scripts_generate_messages_eus
+8b02331ac9bd90d92ced1292aeb0250f NASLab_Crazyflies-master/crazyflie_scripts/CMakeFiles/crazyflie_scripts_generate_messages_lisp
+8b02331ac9bd90d92ced1292aeb0250f NASLab_Crazyflies-master/crazyflie_scripts/CMakeFiles/crazyflie_scripts_generate_messages_nodejs
+8b02331ac9bd90d92ced1292aeb0250f NASLab_Crazyflies-master/crazyflie_scripts/CMakeFiles/crazyflie_scripts_generate_messages_py

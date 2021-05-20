@@ -97,8 +97,8 @@ quadrotor_teleop_EXTERNAL_OBJECTS =
 /home/reed/CrazyFly_ws/devel/lib/crazyflie_scripts/quadrotor_teleop: /opt/ros/melodic/lib/librosconsole_backend_interface.so
 /home/reed/CrazyFly_ws/devel/lib/crazyflie_scripts/quadrotor_teleop: /usr/lib/x86_64-linux-gnu/liblog4cxx.so
 /home/reed/CrazyFly_ws/devel/lib/crazyflie_scripts/quadrotor_teleop: /usr/lib/x86_64-linux-gnu/libboost_regex.so
-/home/reed/CrazyFly_ws/devel/lib/crazyflie_scripts/quadrotor_teleop: /opt/ros/melodic/lib/libroscpp_serialization.so
 /home/reed/CrazyFly_ws/devel/lib/crazyflie_scripts/quadrotor_teleop: /opt/ros/melodic/lib/libxmlrpcpp.so
+/home/reed/CrazyFly_ws/devel/lib/crazyflie_scripts/quadrotor_teleop: /opt/ros/melodic/lib/libroscpp_serialization.so
 /home/reed/CrazyFly_ws/devel/lib/crazyflie_scripts/quadrotor_teleop: /opt/ros/melodic/lib/librostime.so
 /home/reed/CrazyFly_ws/devel/lib/crazyflie_scripts/quadrotor_teleop: /opt/ros/melodic/lib/libcpp_common.so
 /home/reed/CrazyFly_ws/devel/lib/crazyflie_scripts/quadrotor_teleop: /usr/lib/x86_64-linux-gnu/libboost_system.so

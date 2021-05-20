@@ -58,6 +58,7 @@ class Crazyflie:
         self.rate = rospy.Rate(self.hz)  # ROS topic publish rate (10 hz)
         self.vz = .5  # Vertical velocity (m/s)
         self.vy = 30 # Yaw angular velocity (deg/s)
+        self.vh = 0.2 # Horizontal velocity (m/s)
 
         # Space limits (avoid leaving Qualisys MoCap System FOV)
         bound_tol = 0.5  # To account for slight overshoots
@@ -456,8 +457,8 @@ class Crazyflie:
                 elif z > self.zbounds[1]:
                     z = self.zbounds[1]
 
-                # Initialize direction needed to turn
 
+                # Initialize direction needed to turn
                 a_x = math.cos(math.radians(self.ext_yaw))
                 a_y = math.sin(math.radians(self.ext_yaw))
                 b_x = math.cos(math.radians(yaw))
@@ -477,7 +478,7 @@ class Crazyflie:
                                                      or (abs(z - self.ext_z) > (2 * tol)) or (abs(yaw - self.ext_yaw) > 4)) and self.is_tracking \
                         and not self.is_charging:
 
-
+                    # Yawing stuff
                     if abs(yaw - self.ext_yaw) < self.vy:
                         self.msg.yaw = yaw
                         update_dir = 0
@@ -506,10 +507,35 @@ class Crazyflie:
                     elif self.msg.yaw < -180:
                         self.msg.yaw = self.msg.yaw+360
 
+                    ## XY stuff
+                    if abs(self.ext_x - x) < self.vh:
+                        self.msg.x = x
+
+                    else:
+                        if x > self.ext_x:
+                            dir_x = 1
+                        else:
+                            dir_x = -1
+                        self.msg.x = dir_x*(1/self.hz) * self.vh + self.msg.x
+
+                    if abs(self.ext_y - y) < self.vh:
+                        self.msg.y = y
+
+                    else:
+                        if y > self.ext_y:
+                            dir_y = 1
+                        else:
+                            dir_y = -1
+                        self.msg.y = dir_y * (1 / self.hz) * self.vh + self.msg.y
+
+                    print(self.msg.x)
+                    print(self.msg.y)
+                    print('  ')
+
                     # Set position to publish
-                    counter += 1/self.hz
-                    self.msg.x = x
-                    self.msg.y = y
+                    #counter += 1/self.hz
+                    #self.msg.x = x
+                    #self.msg.y = y
                     #self.msg.yaw = yaw
                     self.msg.z = z
                     self.msg.header.seq += 1
@@ -528,7 +554,7 @@ class Crazyflie:
                     # print('X: {}, Y: {}, Z: {}'.format(self.ext_x, self.ext_y, self.ext_z))
 
                     # Set state to emergency land if taking too long to reach position
-                    if self.elap_time > 10:
+                    if self.elap_time > 20:
                         print(f'CF{self.cf_num}: GoTo {x},{y},{z}, Actual {self.ext_x},{self.ext_y},'
                               f'{self.ext_z}')
                         self.emergency_land = True
@@ -1205,7 +1231,9 @@ class Crazyflie:
 
         vbat = msg.data  # Battery voltage
         min_vbat = 3.0  # Battery voltage lower limit
-        max_vbat = 4.23  # Battery voltage upper limit
+        max_vbat = 4.23 # Battery voltage upper limit
+        #min_vbat = 8  # Battery voltage lower limit
+        #max_vbat = 10.8 # Battery voltage upper limit
         self.battery_percent = ((vbat - min_vbat) / (max_vbat - min_vbat)) * 100
 
         self.batt_percent_arr.append(self.battery_percent)

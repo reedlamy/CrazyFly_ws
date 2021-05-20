@@ -55,26 +55,39 @@ def flight_commands(cf, num_chargers, bt):
     #     cf.land()
     # Test takeoff land
 
-    cf.takeoff(0.5)
-    cf.hover(5)
-    cf.goTo(cf.ext_x, cf.ext_y, cf.ext_z, 90, cf.cf_num)
-    cf.hover(6)
-    cf.goTo(cf.ext_x, cf.ext_y, cf.ext_z, 0, cf.cf_num)
-    cf.hover(5)
-    cf.land(0)
+    #cf.takeoff(0.5)
+    #cf.hover(3000)
+    #cf.goTo(0.4078, 0.7699, 0.5, 0, cf.cf_num)
+    #cf.hover(1.5)
+    #cf.goTo(0.1, 0.1, 0.4, 20, cf.cf_num)
+    #cf.hover(1.5)
+    #cf.goTo(0.1, 0.1, 0.4, 40, cf.cf_num)
+    #cf.hover(1.5)
+    #cf.goTo(0.1, 0.1, 0.4, 60, cf.cf_num)
+    #cf.hover(1.5)
+    #cf.goTo(0.1, 0.1, 0.4, 80, cf.cf_num)
+    #cf.hover(1.5)
+    #cf.goTo(0.4078, 0.7699, 0.5, 90, cf.cf_num)
+    #cf.hover(1.5)
+    #cf.goTo(0.1, 0.1, 0.4, 120, cf.cf_num)
+    #cf.hover(1.5)
+    #cf.goTo(0.1, 0.1, 0.4, 140, cf.cf_num)
+    #cf.hover(1.5)
+    #cf.land(0)
 
 
     # lawnmower
-    # cf.takeoff(0.5)
-    # sequence1 = [[[-3, 3, 0.5, 0], [-3, 3, 0.5, 90], [-3, -3, 0.5, 90]]]
-    # sequence2 = [[[-2, -3, 0.5, -90], [-2, 3, 0.5, -90]]]
-    # sequence3 = [[[-1, 3, 0.5, 90], [-1, -3, 0.5, 90]]]
+    cf.takeoff(0.5)
+    cf.hover(2)
+    sequence1 = [[[-1, 1, 0.5, 0], [-1, 1, 0.5, 90], [-1, -1, 0.5, 90]]]
+    sequence2 = [[[-1, -1, 0.5, -90], [-1, 1, 0.5, -90]]]
+    sequence3 = [[[-1, 1, 0.5, 90], [-1, -1, 0.5, 90]]]
 
-    # cf.goToSequence(sequence1, 2, sync=False)
-    # cf.goToSequence(sequence2, 2, sync=False)
-    # cf.goToSequence(sequence3, 2, sync=False)
-    # cf.hover(3)
-    # cf.land()
+    cf.goToSequence(sequence1, [2], sync=False)
+    cf.goToSequence(sequence2, [2], sync=False)
+    cf.goToSequence(sequence3, [2], sync=False)
+    cf.hover(3)
+    cf.land()
 
     # Basic hovering - Recruiting Script 1
     # cf.takeoff(0.3)

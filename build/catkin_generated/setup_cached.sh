@@ -8,4 +8,3 @@
 
 # modified environment variables
 export PWD='/home/reed/CrazyFly_ws/build'
-export PYTHONPATH="/home/reed/catkin_ws/devel/lib/python2.7/dist-packages:$PYTHONPATH"
