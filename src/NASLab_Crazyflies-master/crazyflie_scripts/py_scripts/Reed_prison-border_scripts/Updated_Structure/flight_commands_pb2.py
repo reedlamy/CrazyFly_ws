@@ -72,17 +72,17 @@ def circle_2_init(cf,cf_nums,cf_num,x,y,z,bt,cf_spotted,stop_threads,ad_flag=Fal
 
 
     if cf_num == cf_spotted():
-        cf.hover(3)
+        #cf.hover(3)
+        cf.track_object_stationary_camera(cf_num)
         # publish CF number and instance or use ros action
 
-    elif stop_threads():
+    elif stop_threads() and cf_num != cf_spotted():
         cf.land()
 
 def track_object(cf,cf_num, camera_number):
-    if cf_num == camera_number:
-        cf.track_object_stationary_camera(cf_num)
-    else:
-        cf.track_object_stationary_net(cf_num)
+    #if cf_num == camera_number:
+        #cf.track_object_stationary_camera(cf_num)
+    cf.track_object_stationary_net(cf_num)
 
 
 

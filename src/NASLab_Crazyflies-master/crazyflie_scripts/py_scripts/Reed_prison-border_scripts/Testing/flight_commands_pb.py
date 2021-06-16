@@ -19,13 +19,14 @@
 
 
 import time
+import math
 from matplotlib import pyplot as plt
 
 
 # Set sync = False if individual Crazyflies should wait on each other completing the task before moving on
 # Input: Crazyflie instance, CF nums array, Number of Chargers, Threading barrier,
 #        4D sequence array split into charging cycles, Charging station coordinates, Replan boolean, queue
-def flight_commands(cf, num_chargers, bt):
+def flight_commands_pb(cf, cf_nums, num_chargers, bt):
 
     # Should the battery usage plot be saved and displayed?
     batt_plot_flag = False
@@ -55,11 +56,7 @@ def flight_commands(cf, num_chargers, bt):
     #     cf.land()
     # Test takeoff land
 
-    #print('---------- running  correct code')
-
     #cf.takeoff(0.5)
-    #cf.hover(4)
-
     #cf.hover(3000)
     #cf.goTo(0.4078, 0.7699, 0.5, 0, cf.cf_num)
     #cf.hover(1.5)
@@ -80,18 +77,36 @@ def flight_commands(cf, num_chargers, bt):
     #cf.land(0)
 
 
-    # lawnmower
-    cf.takeoff(0.5)
-    cf.hover(2)
-    sequence1 = [[[-1, 1, 0.5, 0], [-1, 1, 0.5, 90]]] #[-1, -1, 0.5, 90]]]
-    sequence2 = [[[-1, -1, 0.5, -90], [-1, 1, 0.5, -90]]]
-    sequence3 = [[[-1, 1, 0.5, 90], [-1, -1, 0.5, 90]]]
+   # Circle
+   #  if True:
+   #
+   #      cf.takeoff(0.4)
+   #      cf.hover(3)
+   #
+   #      for i in range(0,25):
+   #          t = i/4
+   #          rad = math.fmod(t,math.pi)
+   #
+   #          rad1 = (rad+math.pi) % (2*math.pi) - math.pi
+   #          drone1 = [[0.75*math.cos(t),0.75*math.sin(t),0.4,math.degrees(rad1)]]
+   #
+   #          rad2 = (rad+2*math.pi) % (2*math.pi) - math.pi
+   #          drone2 = [[-0.75 * math.cos(t), -0.75 * math.sin(t), 0.4, math.degrees(rad2)]]
+   #
+   #          cf.goToSequence([drone1,drone2], [1,2], sync=False)
+   #
+   #      cf.hover(3)
+   #      cf.land()
 
-    cf.goToSequence(sequence1, [1], sync=False)
-    #cf.goToSequence(sequence2, [1], sync=False)
-    #cf.goToSequence(sequence3, [1], sync=False)
+
+
+    cf.takeoff(0.5)
+    cf.hover(3)
+    cf.track_object_stationary_2([1,2])
     cf.hover(3)
     cf.land()
+
+
 
     # Basic hovering - Recruiting Script 1
     # cf.takeoff(0.3)

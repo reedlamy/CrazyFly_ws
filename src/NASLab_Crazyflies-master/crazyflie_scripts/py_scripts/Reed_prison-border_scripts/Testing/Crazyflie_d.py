@@ -56,9 +56,17 @@ class Crazyflie:
         self.worldFrame = rospy.get_param("~worldFrame", "/world")
         self.hz = 10
         self.rate = rospy.Rate(self.hz)  # ROS topic publish rate (10 hz)
-        self.vz = .5  # Vertical velocity (m/s) ################################
+        self.vz = .5  # Vertical velocity (m/s)
         self.vy = 30 # Yaw angular velocity (deg/s)
         self.vh = 0.2 # Horizontal velocity (m/s)
+
+        # used for tracking objects
+        self.y_dir_tt = 0
+        self.x_dir_tt = 0
+        self.t_y = 0
+        self.t_x = 0
+        self.tg_yaw_t = 0
+        self.tracker_flag = 0
 
         # Space limits (avoid leaving Qualisys MoCap System FOV)
         bound_tol = 0.5  # To account for slight overshoots
@@ -527,10 +535,6 @@ class Crazyflie:
                         else:
                             dir_y = -1
                         self.msg.y = dir_y * (1 / self.hz) * self.vh + self.msg.y
-
-                    print(self.msg.x)
-                    print(self.msg.y)
-                    print('  ')
 
                     # Set position to publish
                     #counter += 1/self.hz
@@ -1224,6 +1228,186 @@ class Crazyflie:
 
         # Update array of all Crazyflies' external positions
         Crazyflie.cfs_curr_pos[self.cf_num - 1] = [self.ext_x, self.ext_y, self.ext_z]
+
+
+    # track unknown object with only 1 drone
+    def track_object_stationary_1(self,target_x,target_y,target_z):
+
+        track_x = 2
+        track_y = 2
+        track_z = 0.5
+
+        # crazyflie that tracked object
+
+        # finding x,y,and z position to go to
+        opt_dist = 2  # optimal distance for continuous tracking
+        # find vector from tracked object to tracking drone
+        x_dist = self.ext_x - track_x
+        y_dist = self.ext_y - track_y
+        mag = math.sqrt(x_dist ** 2 + y_dist ** 2)
+        # distance from drone for optimal tracking
+        x_d_opt = (x_dist / mag) * opt_dist
+        y_d_opt = (y_dist / mag) * opt_dist
+
+        # find target position
+        tg_x = track_x + x_d_opt  #########################3
+        tg_y = track_y + y_d_opt ########################
+        tg_z = track_z ###############################
+
+        # finding yaw to maintain
+        x_dir = -x_dist
+        y_dir = -y_dist
+
+        # find quadrant
+        if x_dir >= 0:
+            yaw_mod = 0
+        else:
+            if y_dir >= 0:
+                yaw_mod = 180
+            else:
+                yaw_mod = -180
+
+        tg_yaw = math.degrees(math.atan(y_dir / x_dir)) + yaw_mode  # yaw to move towards target with   #############################
+
+    #track unknown object with 2 drones, one with net launcher, one with camera (first position in nums is tracker, 2nd is net)
+    def track_object_stationary_2(self, nums, tol=0.035, sync=True):
+
+        # Exit command if sequence 2D array does not have enough indices to match nums array
+        # or in emergency land state
+        if self.emergency_land:
+            return
+
+        # Current thread is CF specified in nums array
+        elif self.cf_num in nums:
+
+            # if tracking has been made, get global x, y and z, and drone that tracked it (potentially x y and z of drone the tracked it)
+            # could also pass relative and get rid of some of this code for tracker drone
+            track_x = 0
+            track_y = 0
+            track_z = 0.5
+
+            self.tracker_flag = 0 # flag to see if tracker drone has decided where to go yet
+
+            # finding x,y,and z position to go to
+            opt_dist_t = 0.5  # optimal distance for continuous tracking
+            opt_dist_n_h = 0.75  # optimal horizontal distance for net launcher
+            opt_dist_n_v = 0.2  # optimal vertical distance for net launcher
+            net_offset = 45  # offset (degrees) of direction of net launcher from crazyflie defined forward direction
+
+            if self.cf_num == nums[0]:  # crazyflie that tracks object
+
+                # find vector from tracked object to tracking drone
+
+                # This is used later with other code
+                self.t_x = self.ext_x
+                self.t_y = self.ext_y
+
+                x_dist = self.ext_x - track_x
+                y_dist = self.ext_y - track_y
+                mag = math.sqrt(x_dist ** 2 + y_dist ** 2)
+
+                # distance from drone for optimal tracking
+                x_d_opt = (x_dist / mag) * opt_dist_t
+                y_d_opt = (y_dist / mag) * opt_dist_t
+
+                # find target position for tracker drone
+                tg_x_t = track_x + x_d_opt #########################
+                tg_y_t = track_y + y_d_opt #########################
+                tg_z_t = track_z ##########################
+
+                # finding yaw to maintain
+                self.x_dir_tt = -x_dist
+                self.y_dir_tt = -y_dist
+
+                # find quadrant
+                if self.x_dir_tt >= 0:
+                    yaw_mod = 0
+                else:
+                    if self.y_dir_tt >= 0:
+                        yaw_mod = 180
+                    else:
+                        yaw_mod = -180
+
+                self.tg_yaw_t = math.degrees(math.atan(self.y_dir_tt / self.x_dir_tt)) + yaw_mod  # yaw to move towards target with tracker drone #######################
+                self.tracker_flag = 1
+
+                self.goTo(tg_x_t, tg_y_t, tg_z_t,self.tg_yaw_t, nums[0], tol, sync)
+
+            elif self.cf_num == nums[1] :
+
+                while self.tracker_flag == 0:  # crazyflie that has net launcher needs to wait
+                    self.hover(1)
+
+                # get vectors to target and net from tracker (to decide orientation of net launcher target)
+                # already have from tracker to target - x_dir_tt and y_dir_tt, just need tracker to net
+                x_dir_tn = self.ext_x - self.t_x
+                y_dir_tn = self.ext_y - self.t_y
+
+                #take cross product to understand orientation
+                nz_2 = (self.x_dir_tt * y_dir_tn) - (self.y_dir_tt * x_dir_tn)
+
+                # orient net launcher 90 degrees off of tracker drone, the side depends on initial orientation
+                if nz_2 > 0:
+                    angle_mod = -90
+                else:
+                    angle_mod = 90
+
+                n_pos_angle = -(180 - self.tg_yaw_t) + angle_mod
+
+                n_xmod = opt_dist_n_h * math.cos(math.radians(n_pos_angle))
+                n_ymod = opt_dist_n_h * math.sin(math.radians(n_pos_angle))
+
+                # find target position for net drone
+                tg_x_n = track_x + n_xmod   #################
+                tg_y_n = track_y + n_ymod   ##################
+                tg_z_n = track_z + opt_dist_n_v   #############
+
+
+                # finding yaw for net
+                # find quadrant
+                if -n_xmod >= 0:
+                    yaw_mod2 = 0
+                else:
+                    if -n_ymod >= 0:
+                        yaw_mod2 = 180
+                    else:
+                        yaw_mod2 = -180
+
+                tg_yaw_n = math.degrees(math.atan(-n_ymod / -nxmod)) + yaw_mod2 + net_offset #################
+
+                self.goTo(tg_x_n, tg_y_n, tg_z_n, tg_yaw_n, nums[1], tol, sync)
+
+            else:
+                self.hover(1/self.hz)
+
+
+        # If required to wait on all other CFs
+        elif sync:
+
+            # Current CF has finished command
+            Crazyflie.finished_command[self.cf_idx] = True
+
+            # Hover while waiting for other CFs
+            while not all(self.finished_command):
+                if not self.is_charging:
+                    self.hover(1 / self.hz)
+
+            if not self.emergency_land:
+
+                # Barrier to wait for all CFs
+                try:
+                    self.bt.wait()
+                    self.bt.reset()
+                except BrokenBarrierError:
+                    pass
+
+                # Barrier to wait for all CFs
+                try:
+                    self.bt.wait()
+                    self.bt.reset()
+                except BrokenBarrierError:
+                    pass
+
 
     # Crazyflie Battery Subscriber Callback
     # Input: msg = messages received by battery subscriber (batt_subscriber)

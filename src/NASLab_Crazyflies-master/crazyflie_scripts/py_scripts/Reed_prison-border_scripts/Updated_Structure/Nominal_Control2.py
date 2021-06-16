@@ -92,6 +92,7 @@ def nominal_control_init(cf_inst,cf_nums,cf_jobs):
 
 def nominal_flight(job_1,group_1,group_2,job3,cent_pos,cf_nums):
     t = []
+    t1 = []
     bt = Barrier(2)
 
     stop_threads = False
@@ -131,27 +132,27 @@ def nominal_flight(job_1,group_1,group_2,job3,cent_pos,cf_nums):
         tracker_inst = group_2[0][0][0]
         cf_spotted = group_2[1][0][0]
 
-        for thread in t:
-            thread.join()
+        t1.append(Thread(target=track_object, args=(job_1[0][0], job_1[1][0], cf_spotted), daemon=True))
+
+        for thread in t1:
+            thread.start()
 
 
-        emergency_response(job_1,tracker_inst,cf_spotted)
+        #emergency_response(job_1,tracker_inst,cf_spotted)
 
 
 
-def emergency_response(job_1,tracker_inst,tracker_num): # will take all net crazyflies and the drone that made the detection
-
-    t1 = []
+#def emergency_response(job_1,tracker_inst,tracker_num): # will take all net crazyflies and the drone that made the detection
 
     # generate function that finds closest net launcher available, running through all drones under job 1
     # for now, just say net is first drone in job1
 
 
-    t1.append(Thread(target=track_object, args=(tracker_inst,tracker_num,tracker_num),daemon=True))
-    t1.append(Thread(target=track_object, args=(job_1[0][0],job_1[1][0],tracker_num),daemon=True))
+    #t.append(Thread(target=track_object, args=(tracker_inst,tracker_num,tracker_num),daemon=True))
+    #t.append(Thread(target=track_object, args=(job_1[0][0],job_1[1][0],tracker_num),daemon=True))
 
-    for thread in t1:
-        thread.start()
+    #for thread in t:
+        #thread.join()
 
 
 

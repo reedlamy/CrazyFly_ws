@@ -3,7 +3,7 @@
 # Professor: Nina Mahmoudian, Purdue University, ninam@purdue.edu
 #
 # Crazyflie Swarm Controller Script
-# Set up mission
+# Execute sequence of actions for the mission defined in flight path
 # using each Crazyflie's functions from the Crazyflie class
 
 import rospy
@@ -13,12 +13,9 @@ import signal
 from std_msgs.msg import Float32
 from geometry_msgs.msg import PoseStamped  # PointStamped
 from crazyflie_driver.msg import NameArray
-from Nominal_Control2 import nominal_control_init
+from threading import Thread, Barrier
+from flight_commands_pb import flight_commands_pb
 
-#from threading import Thread, Barrier
-#from flight_commands_pb import flight_commands_pb
-
-#s = Mid_Level()
 
 # Charging Pad Position Subscriber Callback
 # Input: data = data returned from charger position subscriber (charger_pos_subscriber),
@@ -61,10 +58,8 @@ if __name__ == '__main__':
     cf_names.sort(key=len)
     cf_nums = [int(name[2:]) for name in cf_names]
 
-    cf_jobs = rospy.get_param("/cf_jobs")
-    cf_jobs = cf_jobs.split(',')
-
-    pad_names = []
+    pad_names = rospy.get_param("/pad_names")
+    pad_names = pad_names.split(',')
 
     # Initialize array so that each Crazyflie's position is available to every other Crazyflie
     Crazyflie.Crazyflie.cfs_curr_pos = [[0] * 3] * int(cf_names[-1][2:])
@@ -124,17 +119,23 @@ if __name__ == '__main__':
 
 
     # Initialize array to hold all threads
-    crazy = []
+    t = []
+
+    # Barriers to synchronize threads
+    bt = Barrier(len(cf_names))
+
 
     # Update class variables if first instance
     crazy_instances[0].global_update(cf_names, pad_names)
 
 
-    nominal_control_init(crazy_instances,cf_nums,cf_jobs) ################################# Call on mid level control
-    # RUN detection stuff here (crazy_instances,cf_names)
+    for crazy_inst in crazy_instances:
+        # Append thread for each Crazyflie to array t (each executes 'flight_path' function)
+        t.append(Thread(target=flight_commands_pb, args=(crazy_inst, cf_nums, 0, bt), daemon=True))
 
-
-
+    # Start all threads
+    for thread in t:
+        thread.start()
 
     # Keep subscribers listening until script terminates
     rospy.spin()

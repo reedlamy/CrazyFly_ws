@@ -563,6 +563,7 @@ class Crazyflie:
                         print(f'CF{self.cf_num}: GoTo {x},{y},{z}, Actual {self.ext_x},{self.ext_y},'
                               f'{self.ext_z}')
                         self.emergency_land = True
+                        self.land()
                         self.emerg_land('goal')
                         break
 
@@ -1320,33 +1321,34 @@ class Crazyflie:
             self.goTo(tg_x_t, tg_y_t, tg_z_t,self.tg_yaw_t, num, tol, sync=False)
 
             # publish this info
-            try:
-                self.camera_pub_callback()
-            except rospy.ROSInterruptException:
-                pass
+            #try:
+            #    self.camera_pub_callback()
+            #except rospy.ROSInterruptException:
+            #    print('publish error')
+            #    self.hover(3)
+            #    self.land()
+                #pass
             #return [self.ext_x,self.ext_y,self.t_x,self.t_y,self.x_dir_tt,self.y_dir_tt]
 
-            self.hover(10)
+            self.camera_pub_callback()
+
+            self.hover(4)
             self.land()
 
     def camera_pub_callback(self):
-        pub_adv = rospy.Publisher("camera_data",camera_msg, queue_size = 5)
+        pub_adv = rospy.Publisher("camera_data",camera_msg, queue_size = 1)
         location_info = camera_msg()
+        rate = self.rate
+        #while not rospy.is_shutdown():
+        location_info.ext_x = int(self.ext_x)
+        location_info.ext_y = int(self.ext_y)
+        location_info.t_x = int(self.t_x)
+        location_info.t_y = int(self.t_y)
+        location_info.x_dir_tt = int(self.x_dir_tt)
+        location_info.y_dir_tt = int(self.y_dir_tt)
 
-        while not rospy.is_shutdown():
-            location_info.ext_x = int(self.ext_x)
-            location_info.ext_y = int(self.ext_y)
-            location_info.t_x = int(self.t_x)
-            location_info.t_y = int(self.t_y)
-            location_info.x_dir_tt = int(self.x_dir_tt)
-            location_info.y_dir_tt = int(self.y_dir_tt)
-
-            try:
-                pub_adv.publish(location_info)
-            except rospy.ROSInterruptException:
-                pass
-
-            rospy.sleep(1.0)
+        pub_adv.publish(location_info)
+        rate.sleep()
 
     def camera_sub_callback(self,data):
         self.ext_x = data.ext_x
