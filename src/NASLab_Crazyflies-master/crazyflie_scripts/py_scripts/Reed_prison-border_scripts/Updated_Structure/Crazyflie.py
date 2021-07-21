@@ -21,6 +21,8 @@ from crazyflie_driver.srv import UpdateParams
 from threading import Barrier, BrokenBarrierError, Event
 from scipy.spatial.transform import Rotation as R
 from crazyflie_scripts.msg import camera_msg
+from geometry_msgs.msg import PoseStamped, PointStamped
+from std_msgs.msg import Float32, Int16
 # from scipy.optimize import linear_sum_assignment  # Used in testing multiple switchLand
 avoid_ros_namespace_conventions = True
 
@@ -170,6 +172,9 @@ class Crazyflie:
         # Initialize publisher to command position to Crazyflies
         self.pub = rospy.Publisher(prefix+"/cmd_position", Position, queue_size=2)
         #self.pub = rospy.Publisher("cmd_position", Position, queue_size=2)
+
+        # Initialize publisher for camera node
+        self.pub_adv = rospy.Publisher("camera_data",camera_msg, queue_size = 1)
 
         # Initial msg
         # Position (crazyflie_driver): Header header; float32 x; float32 y; float32 z; float32 yaw
@@ -486,6 +491,9 @@ class Crazyflie:
                 while (not self.emergency_land) and ((abs(x - self.ext_x) > tol) or (abs(y - self.ext_y) > tol)
                                                      or (abs(z - self.ext_z) > (2 * tol)) or (abs(yaw - self.ext_yaw) > 4)) and self.is_tracking \
                         and not self.is_charging:
+
+                    #print("TIME CHECK")
+                    #print(time.time())
 
                     # Yawing stuff
                     if abs(yaw - self.ext_yaw) < self.vy:
@@ -1235,26 +1243,24 @@ class Crazyflie:
     # track unknown object with only 1 drone
     def track_object_stationary_1(self,target_x,target_y,target_z):
 
-        track_x = 2
-        track_y = 2
-        track_z = 0.5
+        rospy.Subscriber("/global_adv", PointStamped, self.adversary_sub_callback)
 
         # crazyflie that tracked object
 
         # finding x,y,and z position to go to
         opt_dist = 2  # optimal distance for continuous tracking
         # find vector from tracked object to tracking drone
-        x_dist = self.ext_x - track_x
-        y_dist = self.ext_y - track_y
+        x_dist = self.ext_x - self.track_x
+        y_dist = self.ext_y - self.track_y
         mag = math.sqrt(x_dist ** 2 + y_dist ** 2)
         # distance from drone for optimal tracking
         x_d_opt = (x_dist / mag) * opt_dist
         y_d_opt = (y_dist / mag) * opt_dist
 
         # find target position
-        tg_x = track_x + x_d_opt  #########################3
-        tg_y = track_y + y_d_opt ########################
-        tg_z = track_z ###############################
+        tg_x = self.track_x + x_d_opt  #########################3
+        tg_y = self.track_y + y_d_opt ########################
+        tg_z = self.track_z ###############################
 
         # finding yaw to maintain
         x_dir = -x_dist
@@ -1276,9 +1282,8 @@ class Crazyflie:
 
             # if tracking has been made, get global x, y and z, and drone that tracked it (potentially x y and z of drone the tracked it)
             # could also pass relative and get rid of some of this code for tracker drone
-            track_x = 0
-            track_y = 0
-            track_z = 0.5
+            rospy.Subscriber("/global_adv", PointStamped, self.adversary_sub_callback)
+
 
             # finding x,y,and z position to go to
             opt_dist_t = 0.5  # optimal distance for continuous tracking
@@ -1289,8 +1294,8 @@ class Crazyflie:
             self.t_x = self.ext_x
             self.t_y = self.ext_y
 
-            x_dist = self.ext_x - track_x
-            y_dist = self.ext_y - track_y
+            x_dist = self.ext_x - self.track_x
+            y_dist = self.ext_y - self.track_y
             mag = math.sqrt(x_dist ** 2 + y_dist ** 2)
 
             # distance from drone for optimal tracking
@@ -1298,9 +1303,9 @@ class Crazyflie:
             y_d_opt = (y_dist / mag) * opt_dist_t
 
             # find target position for tracker drone
-            tg_x_t = track_x + x_d_opt #########################
-            tg_y_t = track_y + y_d_opt #########################
-            tg_z_t = track_z ##########################
+            tg_x_t = self.track_x + x_d_opt #########################
+            tg_y_t = self.track_y + y_d_opt #########################
+            tg_z_t = self.track_z ##########################
 
             # finding yaw to maintain
             self.x_dir_tt = -x_dist
@@ -1336,7 +1341,6 @@ class Crazyflie:
             self.land()
 
     def camera_pub_callback(self):
-        pub_adv = rospy.Publisher("camera_data",camera_msg, queue_size = 1)
         location_info = camera_msg()
         rate = self.rate
         #while not rospy.is_shutdown():
@@ -1347,7 +1351,7 @@ class Crazyflie:
         location_info.x_dir_tt = int(self.x_dir_tt)
         location_info.y_dir_tt = int(self.y_dir_tt)
 
-        pub_adv.publish(location_info)
+        self.pub_adv.publish(location_info)
         rate.sleep()
 
     def camera_sub_callback(self,data):
@@ -1365,16 +1369,17 @@ class Crazyflie:
         #self.x_dir_tt = track_data[4]
         #self.y_dir_tt = track_data[5]
 
+    def adversary_sub_callback(self,data):
+        self.track_x = data.point.x
+        self.track_y = data.point.y
+        self.track_z = data.point.z
 
 
     def track_object_stationary_net(self,num, tol=0.035):
 
         # subscribe to publisher from crazyflie camera
         rospy.Subscriber("camera_data",camera_msg,self.camera_sub_callback)
-
-        track_x = 0
-        track_y = 0
-        track_z = 0.5
+        rospy.Subscriber("/global_adv", PointStamped, self.adversary_sub_callback)
 
 
         self.takeoff(0.5)
@@ -1411,9 +1416,9 @@ class Crazyflie:
         n_ymod = opt_dist_n_h * math.sin(math.radians(n_pos_angle))
 
         # find target position for net drone
-        tg_x_n = track_x + n_xmod   #################
-        tg_y_n = track_y + n_ymod   ##################
-        tg_z_n = track_z + opt_dist_n_v   #############
+        tg_x_n = self.track_x + n_xmod   #################
+        tg_y_n = self.track_y + n_ymod   ##################
+        tg_z_n = self.track_z + opt_dist_n_v   #############
 
 
         # finding yaw for net
@@ -1429,6 +1434,51 @@ class Crazyflie:
         tg_yaw_n = math.degrees(math.atan(-n_ymod / -n_xmod)) + yaw_mod2 + net_offset #################
 
         self.goTo(tg_x_n, tg_y_n, tg_z_n, tg_yaw_n, num, tol, sync=False)
+
+        self.hover(9)
+        self.land()
+
+    def track_object_stationary_net_test(self,num, tol=0.035):
+
+        # subscribe to publisher from crazyflie camera
+        #rospy.Subscriber("camera_data",camera_msg,self.camera_sub_callback)
+        rospy.Subscriber("/global_adv", PointStamped, self.adversary_sub_callback)
+
+        rate = self.rate
+        rate.sleep()
+
+
+
+        print("tracking")
+
+
+        self.takeoff(0.5)
+
+        self.hover(1)
+
+        x = self.track_x
+        y = self.track_y
+        z = self.track_z
+
+        #self.land()
+
+        print("target")
+        print(x)
+        print(y)
+        print(z)
+
+        #self.ext_x = track_data[0]
+        #self.ext_y = track_data[1]
+        #self.t_x = track_data[2]
+        #self.t_y = track_data[3]
+        #self.x_dir_tt = track_data[4]
+        #self.y_dir_tt = track_data[5]
+
+
+
+
+
+        self.goTo(x, y, z, 0, num, tol, sync=False)
 
         self.hover(9)
         self.land()

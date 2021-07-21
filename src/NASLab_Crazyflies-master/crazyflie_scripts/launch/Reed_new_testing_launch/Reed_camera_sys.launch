@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<launch>
+
+  <env name="ROS_MASTER_URI" value="http://192.168.1.117"/>
+
+
+  <group>
+    <machine name="CAMERA" address="192.168.1.105" password="naslab" env-loader="~/catkin_ws/devel/custom_env.sh" user="naslab" timeout="20.0" default="true"/>
+
+    <!--env-loader="~/catkin_ws/devel/custom_env.sh" user="pi" password="spring2020" timeout="20.0"-->
+    <!--env-loader="/opt/ros/melodic/env_naslab.sh"-->
+
+    <node pkg="nodelet" type="nodelet" name="manager"  args="manager"/>
+
+
+    <include machine="CAMERA" file="/home/naslab/catkin_ws/src/hirolab_drone_simulation/drone-tracker-pcl_proposal/drone_tracker/launch/visual_tracking.launch">
+    </include>
+
+    <include file="/home/naslab/catkin_ws/src/realsense-ros/realsense2_camera/launch/demo_pointcloud.launch" machine="CAMERA">
+    </include>
+  </group>
+
+
+<!--TRY INSTEAD CREATING A NODE THAT LAUNCHES ALL THE--> 
+
+<!-- $(find hirolab_drone_simulation)    /home/naslab/catkin_ws/src/hirolab_drone_simulation/drone-tracker-pcl_proposal/drone_tracker/launch/visual_tracking.launch   -->
+<!-- $(find realsense-ros)         /home/naslab/catkin_ws/src/realsense-ros/realsense2_camera/launch/demo_pointcloud.launch       -->
+
+
+</launch>

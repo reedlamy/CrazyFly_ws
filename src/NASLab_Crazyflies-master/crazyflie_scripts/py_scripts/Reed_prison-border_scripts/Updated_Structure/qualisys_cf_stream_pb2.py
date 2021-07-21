@@ -167,7 +167,7 @@ async def main():
         # Possible error: Launch file and QTM names likely don't match
         else:
 
-            rospy.logwarn("Not all bodies found")
+            rospy.logwarn("Not all bodies")
             return
 
     # Initialize messages & publishers to 'external_position' topic (subscribed by Crazyflie)

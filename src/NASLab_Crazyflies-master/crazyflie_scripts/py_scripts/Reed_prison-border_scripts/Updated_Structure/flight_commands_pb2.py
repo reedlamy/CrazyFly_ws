@@ -82,7 +82,7 @@ def circle_2_init(cf,cf_nums,cf_num,x,y,z,bt,cf_spotted,stop_threads,ad_flag=Fal
 def track_object(cf,cf_num, camera_number):
     #if cf_num == camera_number:
         #cf.track_object_stationary_camera(cf_num)
-    cf.track_object_stationary_net(cf_num)
+    cf.track_object_stationary_net_test(cf_num)
 
 
 

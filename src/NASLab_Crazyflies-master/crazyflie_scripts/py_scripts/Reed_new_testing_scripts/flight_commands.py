@@ -81,17 +81,22 @@ def flight_commands(cf, num_chargers, bt):
 
 
     # lawnmower
-    cf.takeoff(0.5)
-    cf.hover(2)
+    #cf.takeoff(0.5)
+    #cf.hover(2)
     sequence1 = [[[-1, 1, 0.5, 0], [-1, 1, 0.5, 90]]] #[-1, -1, 0.5, 90]]]
     sequence2 = [[[-1, -1, 0.5, -90], [-1, 1, 0.5, -90]]]
     sequence3 = [[[-1, 1, 0.5, 90], [-1, -1, 0.5, 90]]]
+    x = 1
 
-    cf.goToSequence(sequence1, [1], sync=False)
+    while True:
+        # dont do anything
+        x+=1
+
+    #cf.goToSequence(sequence1, [1], sync=False)
     #cf.goToSequence(sequence2, [1], sync=False)
     #cf.goToSequence(sequence3, [1], sync=False)
-    cf.hover(3)
-    cf.land()
+    #cf.hover(3)
+    #cf.land()
 
     # Basic hovering - Recruiting Script 1
     # cf.takeoff(0.3)

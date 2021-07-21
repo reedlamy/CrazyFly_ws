@@ -130,7 +130,7 @@ def nominal_flight(job_1,group_1,group_2,job3,cent_pos,cf_nums):
         # subscribe to something telling info on drone being spotted
         # ie drone_inst and number
         tracker_inst = group_2[0][0][0]
-        cf_spotted = group_2[1][0][0]
+        cf_spotted = group_2[1][0][0] 
 
         t1.append(Thread(target=track_object, args=(job_1[0][0], job_1[1][0], cf_spotted), daemon=True))
 
