@@ -1,5 +1,6 @@
 #!/usr/bin/python3
-# Author: Chris Moneyron, Purdue University, cmoneyron@gmail.com
+# Authors: Reed Lamy, Purdue University, reedlamy@gmail.com
+# Chris Moneyron, Purdue University, cmoneyron@gmail.com
 # Professor: Nina Mahmoudian, Purdue University, ninam@purdue.edu
 #
 # Streaming 6Dof from QTM

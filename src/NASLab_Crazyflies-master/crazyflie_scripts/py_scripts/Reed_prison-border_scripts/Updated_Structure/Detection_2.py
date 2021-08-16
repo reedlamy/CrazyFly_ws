@@ -65,9 +65,9 @@ def cf_position_callback(data):
     cf_yaw = rot[2]
 
 def cf_check(pos): # check for other CF's and if its within mission area
-    global check_cfs_flag
+    global check_cfs_flag, flag, cf_id
 
-    # drawing a box around drone in x-y plane with proper orientation
+    # drawing a rectangle around drone in x-y plane with proper orientation
     x_1 = pos[0]+ math.cos(math.radians(cf_yaw+16))
     x_2 = pos[0]+ math.cos(math.radians(cf_yaw-16))
     x_3 = pos[0]+ math.cos(math.radians(cf_yaw+196))
@@ -85,14 +85,12 @@ def cf_check(pos): # check for other CF's and if its within mission area
     v_4 = [(x_1 - x_4), (y_1 - y_4)]
 
     for i in range(len(Crazyflie.Crazyflie.cfs_curr_pos)):
-        # creating vectors from corner points to drone in question
+        # creating vectors from corner points of rectangle to drone in question
         d_1 = [(Crazyflie.Crazyflie.cfs_curr_pos[i][0] - x_1), (Crazyflie.Crazyflie.cfs_curr_pos[i][1] - y_1)]
         d_2 = [(Crazyflie.Crazyflie.cfs_curr_pos[i][0] - x_2), (Crazyflie.Crazyflie.cfs_curr_pos[i][1] - y_2)]
         d_3 = [(Crazyflie.Crazyflie.cfs_curr_pos[i][0] - x_3), (Crazyflie.Crazyflie.cfs_curr_pos[i][1] - y_3)]
         d_4 = [(Crazyflie.Crazyflie.cfs_curr_pos[i][0] - x_4), (Crazyflie.Crazyflie.cfs_curr_pos[i][1] - y_4)]
 
-        #if math.sqrt((pos[0]-Crazyflie.Crazyflie.cfs_curr_pos[i][0])**2+(pos[1]-Crazyflie.Crazyflie.cfs_curr_pos[i][1])**2+(pos[2]-Crazyflie.Crazyflie.cfs_curr_pos[i][2])**2)<0.25: #check other drones
-        #if cf_x+math.cos(math.radians(cf_yaw))*rel_x-math.sin(math.radians(cf_yaw))*rel_y,cf_y+math.sin(math.radians(cf_yaw))*rel_x+math.cos(math.radians(cf_yaw))*rel_y,cf_z+rel_z
 
         # cross product
         c1 = d_1[0]*v_1[1]-v_1[0]*d_1[1]
@@ -100,26 +98,27 @@ def cf_check(pos): # check for other CF's and if its within mission area
         c3 = d_3[0]*v_3[1]-v_3[0]*d_3[1]
         c4 = d_4[0]*v_4[1]-v_4[0]*d_4[1]
 
-        #print("Qualysis")
-        #print(Crazyflie.Crazyflie.cfs_curr_pos[i][0])
-        #print(Crazyflie.Crazyflie.cfs_curr_pos[i][1])
-        #print(Crazyflie.Crazyflie.cfs_curr_pos[i][2])
-        #print("yaw")
-        #print(cf_yaw)
-        #print("camera")
-        #print(pos[0])
-        #print(pos[1])
-        #print(pos[2])
-        #print("------")
 
-        if c1 > 0 and c2 > 0 and c3 > 0 and c4 > 0 and abs(pos[2]-Crazyflie.Crazyflie.cfs_curr_pos[i][2])<0.27: # drone is within 3d rectangle
+        if c1 > 0 and c2 > 0 and c3 > 0 and c4 > 0 and abs(pos[2]-Crazyflie.Crazyflie.cfs_curr_pos[i][2])<0.27: # drone is within 3d rectangle of error
             check_cfs_flag = 1
-            print("CF detector worked")
-        elif abs(pos[0])>1.5 or abs(pos[1])>2 or abs(pos[3])>2: # check if its within mission area
+            break
+        elif abs(pos[0])>1.5 or abs(pos[1])>2 or pos[3]>2 or pos[3]<0.2: # check if its within mission area
             check_cfs_flag = 1
+            break
         else:
-            check_cfs_flag = 0 # it is good to go ahead and capture
-            print("DETECTION")
+            check_cfs_flag = 0 # it is good to go ahead and check other drones then capture
+
+    if check_cfs_flag == 0: # proper detection has been made
+        flag = 1
+        pub_flag_callback(flag)
+        pub_cf_id_callback(cf_id)
+        position_pub_callback(pos)
+        print("Adversary Spotted")
+
+    else: # no detection, still publish flag
+        flag = 0
+        pub_flag_callback(flag)
+        print("CF Spotted")
 
 
 # Handling CTRL+C from keyboard
@@ -138,10 +137,6 @@ def pub_cf_id_callback(data2):
 
 if __name__ == '__main__':
 
-    check_cfs_flag = 1 # flag for when a detection is made, check once to see if its the other CF's
-    check_cfs_flag = 1 # flag for when a detection is made, check once to see if its the other CF's
-    check_cfs_flag = 1 # flag for when a detection is made, check once to see if its the other CF's
-    check_cfs_flag = 1 # flag for when a detection is made, check once to see if its the other CF's
     check_cfs_flag = 1 # flag for when a detection is made, check once to see if its the other CF's
     flag = 0 # flag for detection being made to be published
     cf_x = 0
@@ -175,9 +170,7 @@ if __name__ == '__main__':
     cf_names = cf_names.split(',')
 
     Crazyflie.Crazyflie.cfs_curr_pos = [[0] * 3] * int(cf_names[-1][2:])
-
     Crazyflie.Crazyflie.all_cfs_is_tracking = [True] * int(cf_names[-1][2:])
-
     crazy_instances = []
 
     for name in cf_names:
@@ -253,36 +246,14 @@ if __name__ == '__main__':
                 #camera = 0 # create a way to know which drone made the detection
                 #camera_pos = Crazyflie.Crazyflie.cfs_curr_pos[camera]
 
+                # turn drone position and info from camera into a global position
                 potential_global_int = [cf_x+math.cos(math.radians(cf_yaw))*rel_x-math.sin(math.radians(cf_yaw))*rel_y,cf_y+math.sin(math.radians(cf_yaw))*rel_x+math.cos(math.radians(cf_yaw))*rel_y,cf_z+rel_z,cf_id]
 
-
-                #print("------")
-                #print("x")
-                #print(cf_x)
-                #print(rel_x)
-                #print("y")
-                #print(cf_y)
-                #print(rel_y)
-                #print("z")
-                #print(cf_z)
-                #print(rel_z)
-                #print("------")
-
+                # Check fiesability of detection
                 cf_check(potential_global_int)
-
-                if check_cfs_flag == 0:
-                    flag = 1
-                    pub_flag_callback(flag)
-                    pub_cf_id_callback(cf_id)
-                    position_pub_callback(potential_global_int)
-                else:
-                    flag = 0
-                    pub_flag_callback(flag)
 
             else:
                 flag = 0
                 pub_flag_callback(flag)
 
-        #print(Crazyflie.Crazyflie.cfs_curr_pos)
-        #print(potential_global_int)
         rate.sleep()

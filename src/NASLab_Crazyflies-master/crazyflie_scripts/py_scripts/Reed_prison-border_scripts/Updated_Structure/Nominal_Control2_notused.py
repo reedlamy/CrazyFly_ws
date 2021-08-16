@@ -84,9 +84,12 @@ def nominal_control_init(cf_inst,cf_nums,cf_jobs):
             group_2_nums.append([Job_2_nums[i * 2 - 2], Job_2_nums[i * 2 - 1]]) # pairs of drones
 
 
-    radius = 0.2
+    radius = 0.2 # radius of circle to place separate patterns around
     for i in range(1,num_patterns+1):
-        group_cent_pos.append([radius*math.cos((i//num_patterns)*3.14159265*2),radius*math.sin((i//num_patterns)*3.14159265*2)])
+        if num_patterns == 1:
+            group_cent_pos.append([0,0]) # if there is only one pattern, center around 0,0
+        else:
+            group_cent_pos.append([radius*math.cos((i//num_patterns)*3.14159265*2),radius*math.sin((i//num_patterns)*3.14159265*2)]) # if there are are multiple patters, center the patterns evenly around a circle
 
     nominal_flight([Job_1_inst,Job_1_nums],[group_1_inst,group_1_nums],[group_2_inst,group_2_nums],[Job_3_inst,Job_3_nums],group_cent_pos,cf_nums)
 
