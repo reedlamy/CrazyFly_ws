@@ -87,9 +87,11 @@ def circle_2_init(cf,cf_nums,cf_num,x,y,z,bt,cf_spotted,stop_threads,ad_flag=Fal
     elif stop_threads() and cf_num != cf_spotted():
         cf.land()
 
-def track_object(cf,cf_num, camera_number):
-    # simply passing info along to low level control
+def track_object(cfs,cf_nums, camera_number):
+
+
     cf.track_object_stationary_net(cf_num)
+
 
 
 

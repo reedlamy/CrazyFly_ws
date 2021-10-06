@@ -140,6 +140,14 @@ class Crazyflie:
                 # Try to send update of parameters
                 try:
                     self.update_params(["kalman/resetEstimation", "flightmode/posSet"])
+            rospy.set_param(prefix + "/motorPowerSet/enable", 1) ##################
+            rospy.set_param(prefix + "/motorPowerSet/m1", 3000) ####################
+
+
+            while update_params_count <= 2:
+                # Try to send update of parameters
+                try:
+                    self.update_params(["kalman/resetEstimation", "flightmode/posSet", "motorPowerSet/enable", "motorPowerSet/m1"]) ##################################
                     break
                 except:
                     rospy.logwarn("Could not update 2nd parameters")
@@ -149,6 +157,28 @@ class Crazyflie:
 
             if update_params_count >= 3:
                 sys.exit()
+
+#####################################################################
+            #rospy.sleep(0.1)  # System delay
+            #update_params_count = 0
+
+            #rospy.set_param(prefix + "/motorPowerSet/enable", 1)
+            #rospy.set_param(prefix + "/motorPowerSet/m1", 3000)
+
+            #while update_params_count <= 2:
+                ## Try to send update of parameters
+                #try:
+                    #self.update_params(["motorPowerSet/enable", "motorPowerSet/m1"])
+                    #break
+                #except:
+                    #rospy.logwarn("Could not update 2nd parameters")
+                    #update_params_count += 1
+                    #continue
+                    ## sys.exit()
+
+            #if update_params_count >= 3:
+                #sys.exit()
+#####################################################################
 
             ## NEW Update of std dev
 
@@ -282,6 +312,27 @@ class Crazyflie:
                 if Crazyflie.dist_2D(pos, [self.ext_x, self.ext_y]) <= 0.1:
                     Crazyflie.chargers_occupied[self.pad_names[p]] = 0  # Reset since taking off will make the pad free
                     break
+
+
+        ########################################################################
+        #service_count = 0
+        #update_params_count = 0
+
+        #while update_params_count <= 2:
+            #try:
+                #rospy.wait_for_service('/' + prefix + '/update_params', timeout=3)
+                #rospy.loginfo("Found " + prefix + " update_params service")
+                #self.update_params = rospy.ServiceProxy('/' + prefix + '/update_params', UpdateParams, persistent=True)
+                #break
+            #except:
+                # rospy.logwarn('Could not find update_params service')
+                #service_count += 1
+                #continue
+            # sys.exit()
+
+        #rospy.set_param('/CF2/motorPowerSet/enable', 1)
+        #rospy.set_param('/CF2/motorPowerSet/m1', 30000)
+        ########################################################################
 
         x = self.ext_x
         y = self.ext_y

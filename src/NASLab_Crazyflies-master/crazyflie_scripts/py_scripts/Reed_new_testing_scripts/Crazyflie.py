@@ -257,6 +257,8 @@ class Crazyflie:
     # Input: z = takeoff height (meters), sync = wait on all CFs (default False)
     def takeoff(self, z, sync=False):
 
+        import rospy
+
         self.in_takeoff = True
 
         # Reset charger occupied value if takeoff commanded for Crazyflie and is done charging (is_charging = False)
@@ -275,6 +277,83 @@ class Crazyflie:
 
         while not rospy.is_shutdown():
             counter = 0
+
+            ############################################################################
+            # Spin up motors for 2 seconds before takeoff
+            ###############################################################
+            prefix = 'CF2'
+            service_count = 0
+            update_params_count = 0
+
+            while service_count <= 1:
+                # Find ROS service 'update params' for CF instance
+
+
+                try:
+                    rospy.wait_for_service('/'+ prefix + '/update_params', timeout=3)
+                    rospy.loginfo("Found " + prefix + " update_params service")
+                    self.update_params = rospy.ServiceProxy('/'+ prefix + '/update_params', UpdateParams, persistent=True)
+                    break
+                except:
+                    rospy.logwarn('Could not find update_params service')
+                    service_count += 1
+                    continue
+                    # sys.exit()
+
+            if service_count >= 2:
+                sys.exit()
+
+            rospy.sleep(0.1)  # System delay
+
+            # Finish reset of controllers and set flight mode to position hold
+
+            rospy.set_param(prefix + "/motorPowerSet/enable", 1)  ##################
+            rospy.set_param(prefix + "/motorPowerSet/m1", 20500)  #################### 20,000
+            rospy.set_param(prefix + "/motorPowerSet/m2", 20500)  ####################
+            rospy.set_param(prefix + "/motorPowerSet/m3", 20500)  ####################
+            rospy.set_param(prefix + "/motorPowerSet/m4", 20500)  ####################
+
+            while update_params_count <= 2:
+                # Try to send update of parameters
+                try:
+                    self.update_params(["motorPowerSet/enable", "motorPowerSet/m1", "motorPowerSet/m2", "motorPowerSet/m3","motorPowerSet/m4"])
+                    break
+                except:
+                    rospy.logwarn("Could not update 2nd parameters")
+                    update_params_count += 1
+                    continue
+                    # sys.exit()
+
+            if update_params_count >= 3:
+                sys.exit()
+
+            rospy.sleep(2)  # System delay
+
+            rospy.set_param("CF2/motorPowerSet/enable", 0)  ##################
+
+            print('DONE')
+
+            update_params_count = 0
+
+            while update_params_count <= 2:
+                # Try to send update of parameters
+                try:
+                    self.update_params(["motorPowerSet/enable"])
+                    break
+                except:
+                    rospy.logwarn("Could not stop enabling power set")
+                    update_params_count += 1
+                    continue
+                    # sys.exit()
+
+            if update_params_count >= 3:
+                sys.exit()
+
+            self.update_params.close()
+
+
+            ###############################################################
+            ############################################################################
 
             # Repeat action to increase altitude while z position is less than commanded z
             while self.ext_z < z and self.is_tracking and not self.is_charging:

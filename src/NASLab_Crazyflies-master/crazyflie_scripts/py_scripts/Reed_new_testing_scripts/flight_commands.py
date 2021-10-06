@@ -20,6 +20,7 @@
 
 import time
 from matplotlib import pyplot as plt
+import rospy
 
 
 # Set sync = False if individual Crazyflies should wait on each other completing the task before moving on
@@ -79,6 +80,7 @@ def flight_commands(cf, num_chargers, bt):
     #cf.hover(1.5)
     #cf.land(0)
 
+<<<<<<< HEAD
 
     # lawnmower
     #cf.takeoff(0.5)
@@ -91,21 +93,95 @@ def flight_commands(cf, num_chargers, bt):
     while True:
         # dont do anything
         x+=1
+=======
+    # lawnmower
+<<<<<<< Updated upstream
+    # cf.takeoff(0.5)
+    # sequence1 = [[[-3, 3, 0.5, 0], [-3, 3, 0.5, 90], [-3, -3, 0.5, 90]]]
+    # sequence2 = [[[-2, -3, 0.5, -90], [-2, 3, 0.5, -90]]]
+    # sequence3 = [[[-1, 3, 0.5, 90], [-1, -3, 0.5, 90]]]
+
+    # cf.goToSequence(sequence1, 2, sync=False)
+    # cf.goToSequence(sequence2, 2, sync=False)
+    # cf.goToSequence(sequence3, 2, sync=False)
+    # cf.hover(3)
+    # cf.land()
+=======
+    #cf.takeoff(0.5)
+    #cf.hover(2)
+    #sequence1 = [[[-1, 1, 0.5, 0], [-1, 1, 0.5, 90]]] #[-1, -1, 0.5, 90]]]
+    #sequence2 = [[[-1, -1, 0.5, -90], [-1, 1, 0.5, -90]]]
+    #sequence3 = [[[-1, 1, 0.5, 90], [-1, -1, 0.5, 90]]]
+    #x = 1
+    #cf.land()
+
+    #while True:
+        # dont do anything
+        #x+=1
+>>>>>>> 10_6_2021_backup
 
     #cf.goToSequence(sequence1, [1], sync=False)
     #cf.goToSequence(sequence2, [1], sync=False)
     #cf.goToSequence(sequence3, [1], sync=False)
     #cf.hover(3)
     #cf.land()
+<<<<<<< HEAD
+=======
+    #service_count = 0
+    #update_params_count = 0
+
+    #print(cf)
+
+    #while update_params_count <= 2:
+        #try:
+            #rospy.wait_for_service('/' + prefix + '/update_params', timeout=3)
+            #rospy.loginfo("Found " + prefix + " update_params service")
+            #self.update_params = rospy.ServiceProxy('/' + prefix + '/update_params', UpdateParams, persistent=True)
+            #break
+        #except:
+            #rospy.logwarn('Could not find update_params service')
+            #service_count += 1
+            #continue
+        # sys.exit()
+
+
+
+
+    #rospy.set_param('/CF2/motorPowerSet/enable', 1)
+    #rospy.set_param('/CF2/motorPowerSet/m1', 3000)
+    #rospy.set_param('/CF2/motorPowerSet/m2', 60000)
+    #rospy.set_param('/CF2/motorPowerSet/m3', 60000)
+    #rospy.set_param('/CF2/motorPowerSet/m4', 60000)
+    #cf.param.set_value(motorPowerSet.enable,1)
+    #cf.param.set_value(motorPowerSet.m1,100)
+
+
+
+    start_time = time.time()+0.1
+
+    while time.time() < start_time:
+        x = 'dont do anything'
+        print('hey')
+
+    #cf.update_params.close()
+
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> 10_6_2021_backup
 
     # Basic hovering - Recruiting Script 1
-    # cf.takeoff(0.3)
+    cf.takeoff(0.4)
     # cf.hover(5)
     # cf.move(0, 0, 0.3, 0)
-    # cf.hover(2)
+    cf.hover(1)
     # cf.move(0, -0.5, 0, 0)
     # cf.hover(5)
-    # cf.land(1)
+    cf.land()
 
     # Test move sequence - Recruiting Script 2
     # cf.takeoff(0.5)

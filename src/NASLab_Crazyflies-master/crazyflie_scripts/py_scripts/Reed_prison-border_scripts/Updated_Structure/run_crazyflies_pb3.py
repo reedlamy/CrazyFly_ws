@@ -151,6 +151,12 @@ def cam_id_sub_callback(data2):
     global cam_id
     cam_id = data2.data # CF ID of camera drone that made the spotting, (so it can remain flying)
 
+def adversary_sub_callback(data):
+    global intruder_x, intruder_y, intruder_z
+    intruder_x = data.point.x
+    intruder_y = data.point.y
+    intruder_z = data.point.z
+
 
 
 # Main function to execute when script is called from launch file
@@ -165,6 +171,13 @@ if __name__ == '__main__':
     cam_id = 1 # place holder for now, hard coded in that CF1 made detection
     flag2 = 0 # used to run nominal mission (I.E. takeoff, begin pattern) only once
     cf_spotted = 0 # (Should rename) Variable used to signify script should move on, (Either mission has been runing for max time or detection has been made)
+    net_dist = 1000 #####################################################################################################################################################
+    net = 0###############################################################3
+
+    # Location of intruder
+    intruder_x = 0
+    intruder_y = 0
+    intruder_z = 0
 
     # Initialize ROS node for the controller
     rospy.init_node('run_crazyflies', anonymous=True)
@@ -189,6 +202,7 @@ if __name__ == '__main__':
     # start subscribers
     flag_sub = rospy.Subscriber("/Intruder_flag", Int16, flag_sub_callback)
     cam_id_sub = rospy.Subscriber("/CF_CAM_ID", Int16, cam_id_sub_callback)
+    intruder_sub = rospy.Subscriber("/global_adv", PointStamped, self.adversary_sub_callback) ###############################################################3
 
     # Initialize array so that each Crazyflie's position is available to every other Crazyflie
     Crazyflie.Crazyflie.cfs_curr_pos = [[0] * 3] * int(cf_names[-1][2:])
@@ -258,7 +272,7 @@ if __name__ == '__main__':
     crazy_instances[0].global_update(cf_names, pad_names)
 
     # get jobs in organized fashion from function
-    jobs = nominal_control_init(crazy_instances,cf_nums,cf_jobs) ################################# Call on mid level control
+    jobs = nominal_control_init(crazy_instances,cf_nums,cf_jobs) # Call on mid level control
 
     # can delete, not used but could be useful for reference
     # nominal_flight([Job_1_inst,Job_1_nums],[group_1_inst,group_1_nums],[group_2_inst,group_2_nums],[Job_3_inst,Job_3_nums],group_cent_pos,cf_nums)
@@ -334,8 +348,27 @@ if __name__ == '__main__':
                     #cf_spotted = group_2[1][0][0]
                     cf_spotted = cam_id # published by detection node
                     stop_threads = True  # condition to stop all threads and land drones
-                    t1.append(Thread(target=track_object, args=(job_1[0][0], job_1[1][0], cf_spotted), daemon=True)) # launch net drone
 
+                    #Find closest net launcher ###########################################################################33
+                    for i in len(job_1[1]):
+                        Crazyflie.Crazyflie.cfs_curr_pos # get xyz of drone
+                        dist = abs(xyz-xyz)
+
+                        if dist < net_dist: #this net is closer
+                            net_dist = dist
+                            net = i
+
+
+                    #Check to see if net laucher is under camera drone, if it is, choose different net #########################################################################3
+                    if Crazyflie.Crazyflie.cfs_curr_pos camera - Crazyflie.Crazyflie.cfs_curr_pos net < value
+                        if net == 0:
+                            net = net+1
+                        else:
+                            net = net-1
+
+
+                    #t1.append(Thread(target=track_object, args=(job_1[0][0], job_1[1][0], cf_spotted), daemon=True)) # launch net drone
+                    t1.append(Thread(target=track_object, args=(job_1[0][net], job_1[1][net], cf_spotted), daemon=True)) ############################################
 
                 else: # no spotting made but all cameras should land due to reaching time limit
                     cf_spotted = 0 # not actually a drone
