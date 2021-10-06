@@ -134,6 +134,9 @@ def flight_commands(cf, num_chargers, bt):
     #cf.update_params.close()
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
