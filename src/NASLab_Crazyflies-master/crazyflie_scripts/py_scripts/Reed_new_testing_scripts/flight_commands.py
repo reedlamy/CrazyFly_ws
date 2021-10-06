@@ -80,8 +80,6 @@ def flight_commands(cf, num_chargers, bt):
     #cf.hover(1.5)
     #cf.land(0)
 
-<<<<<<< HEAD
-
     # lawnmower
     #cf.takeoff(0.5)
     #cf.hover(2)
@@ -93,9 +91,9 @@ def flight_commands(cf, num_chargers, bt):
     while True:
         # dont do anything
         x+=1
-=======
+
     # lawnmower
-<<<<<<< Updated upstream
+
     # cf.takeoff(0.5)
     # sequence1 = [[[-3, 3, 0.5, 0], [-3, 3, 0.5, 90], [-3, -3, 0.5, 90]]]
     # sequence2 = [[[-2, -3, 0.5, -90], [-2, 3, 0.5, -90]]]
@@ -106,7 +104,7 @@ def flight_commands(cf, num_chargers, bt):
     # cf.goToSequence(sequence3, 2, sync=False)
     # cf.hover(3)
     # cf.land()
-=======
+
     #cf.takeoff(0.5)
     #cf.hover(2)
     #sequence1 = [[[-1, 1, 0.5, 0], [-1, 1, 0.5, 90]]] #[-1, -1, 0.5, 90]]]
@@ -118,15 +116,14 @@ def flight_commands(cf, num_chargers, bt):
     #while True:
         # dont do anything
         #x+=1
->>>>>>> 10_6_2021_backup
+
 
     #cf.goToSequence(sequence1, [1], sync=False)
     #cf.goToSequence(sequence2, [1], sync=False)
     #cf.goToSequence(sequence3, [1], sync=False)
     #cf.hover(3)
     #cf.land()
-<<<<<<< HEAD
-=======
+
     #service_count = 0
     #update_params_count = 0
 
@@ -165,14 +162,6 @@ def flight_commands(cf, num_chargers, bt):
 
     #cf.update_params.close()
 
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
->>>>>>> 10_6_2021_backup
 
     # Basic hovering - Recruiting Script 1
     cf.takeoff(0.4)

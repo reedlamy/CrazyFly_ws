@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <launch>
-  <arg name="uri2" default="radio://0/80/2M/0xE7E7E7E7E7" />
+  <arg name="uri2" default="radio://0/100/2M/0xE7E7E7E712" />
   <arg name="frame" default="/world" />
   <arg name="ip" default="192.168.1.104" />
   <arg name="port" default="22223" />
