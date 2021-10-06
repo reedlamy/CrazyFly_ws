@@ -1,5 +1,6 @@
 #!/usr/bin/python3
-# Author: Chris Moneyron, Purdue University, cmoneyron@gmail.com
+# Authors: Reed Lamy, Purdue University, reedlamy@gmail.com
+# Chris Moneyron, Purdue University, cmoneyron@gmail.com
 # Professor: Nina Mahmoudian, Purdue University, ninam@purdue.edu
 #
 # Crazyflie Swarm Controller Module
@@ -20,6 +21,9 @@ from std_msgs.msg import Empty
 from crazyflie_driver.srv import UpdateParams
 from threading import Barrier, BrokenBarrierError, Event
 from scipy.spatial.transform import Rotation as R
+from crazyflie_scripts.msg import camera_msg
+from geometry_msgs.msg import PoseStamped, PointStamped
+from std_msgs.msg import Float32, Int16
 # from scipy.optimize import linear_sum_assignment  # Used in testing multiple switchLand
 avoid_ros_namespace_conventions = True
 
@@ -56,8 +60,18 @@ class Crazyflie:
         self.worldFrame = rospy.get_param("~worldFrame", "/world")
         self.hz = 10
         self.rate = rospy.Rate(self.hz)  # ROS topic publish rate (10 hz)
-        self.vz = .5  # Vertical velocity (m/s)
+        self.vz = 0.5  # Vertical velocity (m/s) (for takeoff)
+        self.vz2 = 0.2 # vertical velocity (m/s) (for go to commands)
         self.vy = 30 # Yaw angular velocity (deg/s)
+        self.vh = 0.2 # Horizontal velocity (m/s)
+
+        # used for tracking objects
+        self.y_dir_tt = 0
+        self.x_dir_tt = 0
+        self.t_y = 0
+        self.t_x = 0
+        self.tg_yaw_t = 0
+        self.tracker_flag = 0
 
         # Space limits (avoid leaving Qualisys MoCap System FOV)
         bound_tol = 0.5  # To account for slight overshoots
@@ -122,10 +136,14 @@ class Crazyflie:
             rospy.set_param(prefix + "/flightmode/posSet", 1)
             # rospy.sleep(0.5)
 
+            rospy.set_param(prefix + "/motorPowerSet/enable", 1) ##################
+            rospy.set_param(prefix + "/motorPowerSet/m1", 3000) ####################
+
+
             while update_params_count <= 2:
                 # Try to send update of parameters
                 try:
-                    self.update_params(["kalman/resetEstimation", "flightmode/posSet"])
+                    self.update_params(["kalman/resetEstimation", "flightmode/posSet", "motorPowerSet/enable", "motorPowerSet/m1"]) ##################################
                     break
                 except:
                     rospy.logwarn("Could not update 2nd parameters")
@@ -135,6 +153,28 @@ class Crazyflie:
 
             if update_params_count >= 3:
                 sys.exit()
+
+#####################################################################
+            #rospy.sleep(0.1)  # System delay
+            #update_params_count = 0
+
+            #rospy.set_param(prefix + "/motorPowerSet/enable", 1)
+            #rospy.set_param(prefix + "/motorPowerSet/m1", 3000)
+
+            #while update_params_count <= 2:
+                ## Try to send update of parameters
+                #try:
+                    #self.update_params(["motorPowerSet/enable", "motorPowerSet/m1"])
+                    #break
+                #except:
+                    #rospy.logwarn("Could not update 2nd parameters")
+                    #update_params_count += 1
+                    #continue
+                    ## sys.exit()
+
+            #if update_params_count >= 3:
+                #sys.exit()
+#####################################################################
 
             ## NEW Update of std dev
 
@@ -160,6 +200,9 @@ class Crazyflie:
         # Initialize publisher to command position to Crazyflies
         self.pub = rospy.Publisher(prefix+"/cmd_position", Position, queue_size=2)
         #self.pub = rospy.Publisher("cmd_position", Position, queue_size=2)
+
+        # Initialize publisher for camera node
+        self.pub_adv = rospy.Publisher("camera_data",camera_msg, queue_size = 1)
 
         # Initial msg
         # Position (crazyflie_driver): Header header; float32 x; float32 y; float32 z; float32 yaw
@@ -256,8 +299,6 @@ class Crazyflie:
     # Input: z = takeoff height (meters), sync = wait on all CFs (default False)
     def takeoff(self, z, sync=False):
 
-        import rospy
-
         self.in_takeoff = True
 
         # Reset charger occupied value if takeoff commanded for Crazyflie and is done charging (is_charging = False)
@@ -268,6 +309,27 @@ class Crazyflie:
                     Crazyflie.chargers_occupied[self.pad_names[p]] = 0  # Reset since taking off will make the pad free
                     break
 
+
+        ########################################################################
+        #service_count = 0
+        #update_params_count = 0
+
+        #while update_params_count <= 2:
+            #try:
+                #rospy.wait_for_service('/' + prefix + '/update_params', timeout=3)
+                #rospy.loginfo("Found " + prefix + " update_params service")
+                #self.update_params = rospy.ServiceProxy('/' + prefix + '/update_params', UpdateParams, persistent=True)
+                #break
+            #except:
+                # rospy.logwarn('Could not find update_params service')
+                #service_count += 1
+                #continue
+            # sys.exit()
+
+        #rospy.set_param('/CF2/motorPowerSet/enable', 1)
+        #rospy.set_param('/CF2/motorPowerSet/m1', 30000)
+        ########################################################################
+
         x = self.ext_x
         y = self.ext_y
         yaw = self.ext_yaw
@@ -276,83 +338,6 @@ class Crazyflie:
 
         while not rospy.is_shutdown():
             counter = 0
-
-            ############################################################################
-            # Spin up motors for 2 seconds before takeoff
-            ###############################################################
-            prefix = 'CF2'
-            service_count = 0
-            update_params_count = 0
-
-            while service_count <= 1:
-                # Find ROS service 'update params' for CF instance
-
-
-                try:
-                    rospy.wait_for_service('/'+ prefix + '/update_params', timeout=3)
-                    rospy.loginfo("Found " + prefix + " update_params service")
-                    self.update_params = rospy.ServiceProxy('/'+ prefix + '/update_params', UpdateParams, persistent=True)
-                    break
-                except:
-                    rospy.logwarn('Could not find update_params service')
-                    service_count += 1
-                    continue
-                    # sys.exit()
-
-            if service_count >= 2:
-                sys.exit()
-
-            rospy.sleep(0.1)  # System delay
-
-            # Finish reset of controllers and set flight mode to position hold
-
-            rospy.set_param(prefix + "/motorPowerSet/enable", 1)  ##################
-            rospy.set_param(prefix + "/motorPowerSet/m1", 20500)  #################### 20,000
-            rospy.set_param(prefix + "/motorPowerSet/m2", 20500)  ####################
-            rospy.set_param(prefix + "/motorPowerSet/m3", 20500)  ####################
-            rospy.set_param(prefix + "/motorPowerSet/m4", 20500)  ####################
-
-            while update_params_count <= 2:
-                # Try to send update of parameters
-                try:
-                    self.update_params(["motorPowerSet/enable", "motorPowerSet/m1", "motorPowerSet/m2", "motorPowerSet/m3","motorPowerSet/m4"])
-                    break
-                except:
-                    rospy.logwarn("Could not update 2nd parameters")
-                    update_params_count += 1
-                    continue
-                    # sys.exit()
-
-            if update_params_count >= 3:
-                sys.exit()
-
-            rospy.sleep(2)  # System delay
-
-            rospy.set_param("CF2/motorPowerSet/enable", 0)  ##################
-
-            print('DONE')
-
-            update_params_count = 0
-
-            while update_params_count <= 2:
-                # Try to send update of parameters
-                try:
-                    self.update_params(["motorPowerSet/enable"])
-                    break
-                except:
-                    rospy.logwarn("Could not stop enabling power set")
-                    update_params_count += 1
-                    continue
-                    # sys.exit()
-
-            if update_params_count >= 3:
-                sys.exit()
-
-            self.update_params.close()
-
-
-            ###############################################################
-            ############################################################################
 
             # Repeat action to increase altitude while z position is less than commanded z
             while self.ext_z < z and self.is_tracking and not self.is_charging:
@@ -535,8 +520,8 @@ class Crazyflie:
                 elif z > self.zbounds[1]:
                     z = self.zbounds[1]
 
-                # Initialize direction needed to turn
 
+                # Initialize direction needed to turn
                 a_x = math.cos(math.radians(self.ext_yaw))
                 a_y = math.sin(math.radians(self.ext_yaw))
                 b_x = math.cos(math.radians(yaw))
@@ -556,7 +541,10 @@ class Crazyflie:
                                                      or (abs(z - self.ext_z) > (2 * tol)) or (abs(yaw - self.ext_yaw) > 4)) and self.is_tracking \
                         and not self.is_charging:
 
+                    #print("TIME CHECK")
+                    #print(time.time())
 
+                    # Yawing stuff
                     if abs(yaw - self.ext_yaw) < self.vy:
                         self.msg.yaw = yaw
                         update_dir = 0
@@ -585,12 +573,43 @@ class Crazyflie:
                     elif self.msg.yaw < -180:
                         self.msg.yaw = self.msg.yaw+360
 
+                    ## XY stuff
+                    if abs(self.ext_x - x) < self.vh:
+                        self.msg.x = x
+
+                    else:
+                        if x > self.ext_x:
+                            dir_x = 1
+                        else:
+                            dir_x = -1
+                        self.msg.x = dir_x*(1/self.hz) * self.vh + self.msg.x
+
+                    if abs(self.ext_y - y) < self.vh:
+                        self.msg.y = y
+
+                    else:
+                        if y > self.ext_y:
+                            dir_y = 1
+                        else:
+                            dir_y = -1
+                        self.msg.y = dir_y * (1 / self.hz) * self.vh + self.msg.y
+
+                    if abs(self.ext_z - z)< self.vz:
+                        self.msg.z = z
+
+                    else:
+                        if z > self.ext_z:
+                            dir_z = 1
+                        else:
+                            dir_z = -1
+                        self.msg.z = dir_z * (1 / self.hz) * self.vz2 + self.msg.z
+
                     # Set position to publish
-                    counter += 1/self.hz
-                    self.msg.x = x
-                    self.msg.y = y
+                    #counter += 1/self.hz
+                    #self.msg.x = x
+                    #self.msg.y = y
                     #self.msg.yaw = yaw
-                    self.msg.z = z
+                    #self.msg.z = z
                     self.msg.header.seq += 1
                     self.msg.header.stamp = rospy.Time.now()
                     # Log info
@@ -607,10 +626,11 @@ class Crazyflie:
                     # print('X: {}, Y: {}, Z: {}'.format(self.ext_x, self.ext_y, self.ext_z))
 
                     # Set state to emergency land if taking too long to reach position
-                    if self.elap_time > 10:
+                    if self.elap_time > 20:
                         print(f'CF{self.cf_num}: GoTo {x},{y},{z}, Actual {self.ext_x},{self.ext_y},'
                               f'{self.ext_z}')
                         self.emergency_land = True
+                        self.land()
                         self.emerg_land('goal')
                         break
 
@@ -1278,13 +1298,246 @@ class Crazyflie:
         # Update array of all Crazyflies' external positions
         Crazyflie.cfs_curr_pos[self.cf_num - 1] = [self.ext_x, self.ext_y, self.ext_z]
 
+
+    # track unknown object with only 1 drone
+    def track_object_stationary_1(self,target_x,target_y,target_z): # NOT USED, CAN BE USED FOR TESTING!!!!!! ####################################################################
+
+        rospy.Subscriber("/global_adv", PointStamped, self.adversary_sub_callback)
+
+        # crazyflie that tracked object
+
+        # finding x,y,and z position to go to
+        opt_dist = 2  # optimal distance for continuous tracking
+        # find vector from tracked object to tracking drone
+        x_dist = self.ext_x - self.track_x
+        y_dist = self.ext_y - self.track_y
+        mag = math.sqrt(x_dist ** 2 + y_dist ** 2)
+        # distance from drone for optimal tracking
+        x_d_opt = (x_dist / mag) * opt_dist
+        y_d_opt = (y_dist / mag) * opt_dist
+
+        # find target position
+        tg_x = self.track_x + x_d_opt
+        tg_y = self.track_y + y_d_opt
+        tg_z = self.track_z
+
+        # finding yaw to maintain
+        x_dir = -x_dist
+        y_dir = -y_dist
+
+        # find quadrant
+        if x_dir >= 0:
+            yaw_mod = 0
+        else:
+            if y_dir >= 0:
+                yaw_mod = 180
+            else:
+                yaw_mod = -180
+
+        tg_yaw = math.degrees(math.atan(y_dir / x_dir)) + yaw_mode  # yaw to move towards target with   #############################
+
+    #track unknown object with camera drone and published info used by net drone
+    def track_object_stationary_camera(self,num, tol=0.035):
+
+        # Get global x, y and z from detection node, and drone that tracked it
+        rospy.Subscriber("/global_adv", PointStamped, self.adversary_sub_callback)
+
+        self.hover(2) # wait for subscribers to get started
+
+        # finding x,y,and z position to go to
+        opt_dist_t = 0.75  # optimal radius for camera for continuous tracking
+
+
+        # This is used later with other code, resetting name to be safe
+        self.t_x = self.ext_x
+        self.t_y = self.ext_y
+
+        # find the distance to target in global frame
+        x_dist = self.ext_x - self.track_x
+        y_dist = self.ext_y - self.track_y
+        mag = math.sqrt(x_dist ** 2 + y_dist ** 2)
+
+        # optimal distances in x and y for drone for optimal tracking
+        x_d_opt = (x_dist / mag) * opt_dist_t
+        y_d_opt = (y_dist / mag) * opt_dist_t
+
+        # find target position for tracker drone
+        tg_x_t = self.track_x + x_d_opt
+        tg_y_t = self.track_y + y_d_opt
+        tg_z_t = self.track_z
+
+        # finding yaw to maintain with next few lines
+        self.x_dir_tt = -x_dist
+        self.y_dir_tt = -y_dist
+
+        # find quadrant
+        if self.x_dir_tt >= 0:
+            yaw_mod = 0
+        else:
+            if self.y_dir_tt >= 0:
+                yaw_mod = 180
+            else:
+                yaw_mod = -180
+
+        self.tg_yaw_t = math.degrees(math.atan(self.y_dir_tt / self.x_dir_tt)) + yaw_mod  # yaw to move towards target with tracker drone
+        self.tracker_flag = 1
+
+
+        self.goTo(tg_x_t, tg_y_t, tg_z_t,self.tg_yaw_t, num, sync=False)
+
+        # publish info needed for net drone
+        self.camera_pub_callback()
+
+        self.hover(4)
+        self.land()
+
+    def camera_pub_callback(self):
+        location_info = camera_msg()
+        rate = self.rate
+
+        location_info.ext_x = int(self.ext_x)
+        location_info.ext_y = int(self.ext_y)
+        location_info.t_x = int(self.t_x)
+        location_info.t_y = int(self.t_y)
+        location_info.x_dir_tt = int(self.x_dir_tt)
+        location_info.y_dir_tt = int(self.y_dir_tt)
+
+        self.pub_adv.publish(location_info)
+        rate.sleep()
+
+    def camera_sub_callback(self,data):
+        self.ext_x = data.ext_x
+        self.ext_y = data.ext_y
+        self.t_x = data.t_x
+        self.t_y = data.t_y
+        self.x_dir_tt = data.x_dir_tt
+        self.y_dir_tt = data.y_dir_tt
+
+        #self.ext_x = track_data[0]
+        #self.ext_y = track_data[1]
+        #self.t_x = track_data[2]
+        #self.t_y = track_data[3]
+        #self.x_dir_tt = track_data[4]
+        #self.y_dir_tt = track_data[5]
+
+    def adversary_sub_callback(self,data):
+        self.track_x = data.point.x
+        self.track_y = data.point.y
+        self.track_z = data.point.z
+
+
+    def track_object_stationary_net(self,num, tol=0.035):
+
+        # subscribe to publishers from crazyflie camera
+        rospy.Subscriber("camera_data",camera_msg,self.camera_sub_callback)
+        rospy.Subscriber("/global_adv", PointStamped, self.adversary_sub_callback)
+
+
+        self.takeoff(0.5)
+        self.hover(1)
+
+
+        # get vectors to target and net from camera (to decide orientation of net launcher target)
+        # already have from tracker to target - x_dir_tt and y_dir_tt, just need tracker to net
+        x_dir_tn = self.ext_x - self.t_x
+        y_dir_tn = self.ext_y - self.t_y
+
+        opt_dist_n_h = 0.75  # optimal horizontal distance for net launcher
+        opt_dist_n_v = 0.3  # optimal vertical distance for net launcher
+        net_offset = 45  # offset (degrees) of direction of net launcher from crazyflie defined forward direction
+
+        #take cross product to understand orientation
+        nz_2 = (self.x_dir_tt * y_dir_tn) - (self.y_dir_tt * x_dir_tn)
+
+        # orient net launcher 90 degrees off of tracker drone, the side depends on initial orientation
+        if nz_2 > 0:
+            angle_mod = -90
+        else:
+            angle_mod = 90
+
+        n_pos_angle = -(180 - self.tg_yaw_t) + angle_mod
+
+        n_xmod = opt_dist_n_h * math.cos(math.radians(n_pos_angle))
+        n_ymod = opt_dist_n_h * math.sin(math.radians(n_pos_angle))
+
+        # find target position for net drone
+        tg_x_n = self.track_x + n_xmod   #################
+        tg_y_n = self.track_y + n_ymod   ##################
+        tg_z_n = self.track_z + opt_dist_n_v   #############
+
+
+        # finding yaw for net
+        # find quadrant
+        if -n_xmod >= 0:
+            yaw_mod2 = 0
+        else:
+            if -n_ymod >= 0:
+                yaw_mod2 = 180
+            else:
+                yaw_mod2 = -180
+
+        tg_yaw_n = math.degrees(math.atan(-n_ymod / -n_xmod)) + yaw_mod2 + net_offset
+
+        self.goTo(tg_x_n, tg_y_n, tg_z_n, tg_yaw_n, num, sync=False)
+
+        self.hover(9)
+        self.land()
+
+    def track_object_stationary_net_test(self,num, tol=0.035):
+
+        # subscribe to publisher from crazyflie camera
+        #rospy.Subscriber("camera_data",camera_msg,self.camera_sub_callback)
+        rospy.Subscriber("/global_adv", PointStamped, self.adversary_sub_callback)
+
+        rate = self.rate
+        rate.sleep()
+
+
+
+        print("tracking")
+
+
+        self.takeoff(0.5)
+
+        self.hover(1)
+
+        x = self.track_x
+        y = self.track_y
+        z = self.track_z
+
+        #self.land()
+
+        print("target")
+        print(x)
+        print(y)
+        print(z)
+
+        #self.ext_x = track_data[0]
+        #self.ext_y = track_data[1]
+        #self.t_x = track_data[2]
+        #self.t_y = track_data[3]
+        #self.x_dir_tt = track_data[4]
+        #self.y_dir_tt = track_data[5]
+
+
+
+
+
+        self.goTo(x, y, z, 0, num, tol, sync=False)
+
+        self.hover(9)
+        self.land()
+
+
     # Crazyflie Battery Subscriber Callback
     # Input: msg = messages received by battery subscriber (batt_subscriber)
     def battery_callback(self, msg):
 
         vbat = msg.data  # Battery voltage
         min_vbat = 3.0  # Battery voltage lower limit
-        max_vbat = 4.23  # Battery voltage upper limit
+        max_vbat = 4.23 # Battery voltage upper limit
+        #min_vbat = 8  # Battery voltage lower limit
+        #max_vbat = 10.8 # Battery voltage upper limit
         self.battery_percent = ((vbat - min_vbat) / (max_vbat - min_vbat)) * 100
 
         self.batt_percent_arr.append(self.battery_percent)

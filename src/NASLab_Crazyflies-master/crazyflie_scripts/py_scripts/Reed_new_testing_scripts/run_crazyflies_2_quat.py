@@ -16,7 +16,6 @@ from crazyflie_driver.msg import NameArray
 from threading import Thread, Barrier
 from flight_commands import flight_commands
 
-
 # Charging Pad Position Subscriber Callback
 # Input: data = data returned from charger position subscriber (charger_pos_subscriber),
 # charger_idx = charging pad index
@@ -55,8 +54,6 @@ if __name__ == '__main__':
     cf_names = rospy.get_param("/cf_names")
     cf_names = cf_names.split(',')
 
-    pad_names = rospy.get_param("/pad_names")
-    pad_names = pad_names.split(',')
 
     # Initialize array so that each Crazyflie's position is available to every other Crazyflie
     Crazyflie.Crazyflie.cfs_curr_pos = [[0] * 3] * int(cf_names[-1][2:])
@@ -121,7 +118,7 @@ if __name__ == '__main__':
     # Barriers to synchronize threads
     bt = Barrier(len(cf_names))
 
-
+    pad_names = []
     # Update class variables if first instance
     crazy_instances[0].global_update(cf_names, pad_names)
 
