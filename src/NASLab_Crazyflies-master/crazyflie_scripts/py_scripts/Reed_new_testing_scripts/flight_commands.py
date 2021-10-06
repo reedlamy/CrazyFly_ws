@@ -133,6 +133,9 @@ def flight_commands(cf, num_chargers, bt):
 
     #cf.update_params.close()
 
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     # Basic hovering - Recruiting Script 1
