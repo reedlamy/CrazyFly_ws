@@ -77,8 +77,6 @@ class Crazyflie:
         if qualisys_connected:
             while service_count <= 1:
                 # Find ROS service 'update params' for CF instance
-
-
                 try:
                     rospy.wait_for_service('/'+ prefix + '/update_params', timeout=3)
                     rospy.loginfo("Found " + prefix + " update_params service")
@@ -255,7 +253,9 @@ class Crazyflie:
 
     # Take off
     # Input: z = takeoff height (meters), sync = wait on all CFs (default False)
-    def takeoff(self, z, sync=False):
+    def takeoff(self, z,cf_num, sync=False):
+
+        print(cf_num)
 
         import rospy
 
@@ -281,13 +281,12 @@ class Crazyflie:
             ############################################################################
             # Spin up motors for 2 seconds before takeoff
             ###############################################################
-            prefix = 'CF2'
+            prefix = "CF%s"%cf_num
             service_count = 0
             update_params_count = 0
 
             while service_count <= 1:
                 # Find ROS service 'update params' for CF instance
-
 
                 try:
                     rospy.wait_for_service('/'+ prefix + '/update_params', timeout=3)
@@ -316,7 +315,7 @@ class Crazyflie:
             while update_params_count <= 2:
                 # Try to send update of parameters
                 try:
-                    self.update_params(["motorPowerSet/enable", "motorPowerSet/m1", "motorPowerSet/m2", "motorPowerSet/m3","motorPowerSet/m4"])
+                    self.update_params(["motorPowerSet/enable", "motorPowerSet/m1", "motorPowerSet/m2", "motorPowerSet/m3", "motorPowerSet/m4"])
                     break
                 except:
                     rospy.logwarn("Could not update 2nd parameters")
@@ -329,9 +328,7 @@ class Crazyflie:
 
             rospy.sleep(2)  # System delay
 
-            rospy.set_param("CF2/motorPowerSet/enable", 0)  ##################
-
-            print('DONE')
+            rospy.set_param(prefix + "/motorPowerSet/enable", 0)  ##################
 
             update_params_count = 0
 
@@ -339,6 +336,7 @@ class Crazyflie:
                 # Try to send update of parameters
                 try:
                     self.update_params(["motorPowerSet/enable"])
+                    print('Flight Mode Changed')
                     break
                 except:
                     rospy.logwarn("Could not stop enabling power set")
@@ -350,7 +348,6 @@ class Crazyflie:
                 sys.exit()
 
             self.update_params.close()
-
 
             ###############################################################
             ############################################################################
@@ -554,8 +551,9 @@ class Crazyflie:
 
                 # Command position until within specified tolerance (form of closed loop control)
                 while (not self.emergency_land) and ((abs(x - self.ext_x) > tol) or (abs(y - self.ext_y) > tol)
-                                                     or (abs(z - self.ext_z) > (2 * tol)) or (abs(yaw - self.ext_yaw) > 4)) and self.is_tracking \
+                                                     or (abs(z - self.ext_z) > (2 * tol)) or (abs(yaw - self.ext_yaw) > 10)) and self.is_tracking \
                         and not self.is_charging:
+
 
                     # Yawing stuff
                     if abs(yaw - self.ext_yaw) < self.vy:
@@ -607,10 +605,6 @@ class Crazyflie:
                             dir_y = -1
                         self.msg.y = dir_y * (1 / self.hz) * self.vh + self.msg.y
 
-                    print(self.msg.x)
-                    print(self.msg.y)
-                    print('  ')
-
                     # Set position to publish
                     #counter += 1/self.hz
                     #self.msg.x = x
@@ -634,8 +628,8 @@ class Crazyflie:
 
                     # Set state to emergency land if taking too long to reach position
                     if self.elap_time > 20:
-                        print(f'CF{self.cf_num}: GoTo {x},{y},{z}, Actual {self.ext_x},{self.ext_y},'
-                              f'{self.ext_z}')
+                        print(f'CF{self.cf_num}: GoTo {x},{y},{z},{yaw}, Actual {self.ext_x},{self.ext_y},'
+                              f'{self.ext_z},{self.ext_yaw}')
                         self.emergency_land = True
                         self.emerg_land('goal')
                         break

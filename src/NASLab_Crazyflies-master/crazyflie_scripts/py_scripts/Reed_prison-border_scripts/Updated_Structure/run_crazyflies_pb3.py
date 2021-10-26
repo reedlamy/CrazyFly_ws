@@ -14,10 +14,10 @@ import signal
 import math
 import time
 from std_msgs.msg import Float32, Int16
-from geometry_msgs.msg import PoseStamped  # PointStamped
+from geometry_msgs.msg import PoseStamped, PointStamped
 from crazyflie_driver.msg import NameArray
-import flight_commands_pb2
-from flight_commands_pb2 import circle_1_init, circle_2_init, track_object
+import flight_commands_pb3
+from flight_commands_pb3 import circle_1_init, circle_2_init, track_object
 from threading import Thread, Barrier
 import threading
 #from Nominal_Control2 import nominal_control_init
@@ -202,7 +202,7 @@ if __name__ == '__main__':
     # start subscribers
     flag_sub = rospy.Subscriber("/Intruder_flag", Int16, flag_sub_callback)
     cam_id_sub = rospy.Subscriber("/CF_CAM_ID", Int16, cam_id_sub_callback)
-    intruder_sub = rospy.Subscriber("/global_adv", PointStamped, self.adversary_sub_callback) ###############################################################3
+    intruder_sub = rospy.Subscriber("/global_adv", PointStamped, adversary_sub_callback) ###############################################################3
 
     # Initialize array so that each Crazyflie's position is available to every other Crazyflie
     Crazyflie.Crazyflie.cfs_curr_pos = [[0] * 3] * int(cf_names[-1][2:])
@@ -350,21 +350,21 @@ if __name__ == '__main__':
                     stop_threads = True  # condition to stop all threads and land drones
 
                     #Find closest net launcher ###########################################################################33
-                    for i in len(job_1[1]):
-                        Crazyflie.Crazyflie.cfs_curr_pos # get xyz of drone
-                        dist = abs(xyz-xyz)
+                    #for i in len(job_1[1]):
+                    #    Crazyflie.Crazyflie.cfs_curr_pos # get xyz of drone
+                    #    dist = abs(xyz-xyz)
 
-                        if dist < net_dist: #this net is closer
-                            net_dist = dist
-                            net = i
+                    #    if dist < net_dist: #this net is closer
+                    #        net_dist = dist
+                    net = 0  # will be assigned right above
 
 
                     #Check to see if net laucher is under camera drone, if it is, choose different net #########################################################################3
-                    if Crazyflie.Crazyflie.cfs_curr_pos camera - Crazyflie.Crazyflie.cfs_curr_pos net < value
-                        if net == 0:
-                            net = net+1
-                        else:
-                            net = net-1
+                    #if Crazyflie.Crazyflie.cfs_curr_pos camera - Crazyflie.Crazyflie.cfs_curr_pos net < value
+                    #    if net == 0:
+                    #        net = net+1
+                    #    else:
+                    #        net = net-1
 
 
                     #t1.append(Thread(target=track_object, args=(job_1[0][0], job_1[1][0], cf_spotted), daemon=True)) # launch net drone

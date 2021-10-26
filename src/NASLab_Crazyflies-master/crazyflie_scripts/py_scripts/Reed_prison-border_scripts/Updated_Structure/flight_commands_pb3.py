@@ -35,7 +35,7 @@ import Crazyflie
 
 def circle_1_init(cf,cf_num,x,y,z,cf_spotted,stop_threads,ad_flag=False): # ad_flag is advisory flag
     i = 500 # not needed, used for testing, can be set to 0
-    cf.takeoff(0.4)
+    cf.takeoff(0.4,cf_num)
     cf.hover(3) # wait for drone to stabilize, take off can be sketchy occasionally
 
     while not stop_threads():
@@ -61,7 +61,7 @@ def circle_2_init(cf,cf_nums,cf_num,x,y,z,bt,cf_spotted,stop_threads,ad_flag=Fal
     bt.wait()
     bt.reset()
 
-    cf.takeoff(0.4)
+    cf.takeoff(0.4,cf_num)
     cf.hover(1)
 
     while not stop_threads():  # same thing as above function, but with pair of drones so need two separate radian values pi radians separate from each other (opposite sides of local circle)
@@ -87,7 +87,7 @@ def circle_2_init(cf,cf_nums,cf_num,x,y,z,bt,cf_spotted,stop_threads,ad_flag=Fal
     elif stop_threads() and cf_num != cf_spotted():
         cf.land()
 
-def track_object(cfs,cf_nums, camera_number):
+def track_object(cf,cf_num, camera_number):
 
 
     cf.track_object_stationary_net(cf_num)
