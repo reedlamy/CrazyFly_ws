@@ -84,6 +84,7 @@ def cf_check(pos): # check for other CF's and if its within mission area
     v_3 = [(x_4 - x_3), (y_4 - y_3)]
     v_4 = [(x_1 - x_4), (y_1 - y_4)]
 
+
     for i in range(len(Crazyflie.Crazyflie.cfs_curr_pos)):
         # creating vectors from corner points of rectangle to drone in question
         d_1 = [(Crazyflie.Crazyflie.cfs_curr_pos[i][0] - x_1), (Crazyflie.Crazyflie.cfs_curr_pos[i][1] - y_1)]
@@ -165,8 +166,8 @@ if __name__ == '__main__':
     # Exit when CTRL+C is pressed
     signal.signal(signal.SIGINT, signal_handler)
 
-    # Get list of Crazyflie names from launch file that will be controlled (except intruder)
-    cf_names = rospy.get_param("/cf_names")
+    # Get list of Crazyflie names from launch file that will be controlled
+    cf_names = rospy.get_param("/cf_names2")
     cf_names = cf_names.split(',')
 
     Crazyflie.Crazyflie.cfs_curr_pos = [[0] * 3] * int(cf_names[-1][2:])

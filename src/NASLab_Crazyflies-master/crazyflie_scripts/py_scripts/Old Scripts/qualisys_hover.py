@@ -50,11 +50,6 @@ if __name__ == '__main__':
             msg.y = 0.0
             msg.yaw = 0.0
             msg.z = (i/takeoff_time)*zDistance
-            rospy.loginfo("Taking off")
-            rospy.loginfo(msg.x)
-            rospy.loginfo(msg.y)
-            rospy.loginfo(msg.z)
-            rospy.loginfo(msg.yaw)
             now = rospy.get_time()
             msg.header.seq += 1
             msg.header.stamp = rospy.Time.now()
@@ -69,11 +64,6 @@ if __name__ == '__main__':
             msg.z = zDistance
             msg.header.seq += 1
             msg.header.stamp = rospy.Time.now()
-            rospy.loginfo("Hovering")
-            rospy.loginfo(msg.x)
-            rospy.loginfo(msg.y)
-            rospy.loginfo(msg.z)
-            rospy.loginfo(msg.yaw)
             now = rospy.get_time()
             msg.header.seq += 1
             msg.header.stamp = rospy.Time.now()
@@ -105,7 +95,7 @@ if __name__ == '__main__':
 
     # Land
     while not rospy.is_shutdown():
-        while zDistance > 0:
+        while zDistance > 0.07:
             msg.x = 0  # xPoint
             msg.y = 0  # yPoint
             msg.z = zDistance

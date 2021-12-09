@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+<launch>
+  <!--arg name="uri1" default="radio://0/80/2M/0xE7E7E7E706" /-->
+  <!--arg name="uri1" default="radio://0/80/2M/0xE7E7E7E7E7" />
+  <arg name="uri2" default="radio://0/100/2M/0xE7E7E7E712" />
+  <arg name="uri3" default="radio://0/120/2M/0xE7E7E7E708" /-->
+
+
+  <!--arg name="uri1" default="radio://0/120/2M/0xE7E7E7E708" /-->
+
+  <!--arg name="uri1" default="radio://0/100/2M/0xE7E7E7E712" /-->
+  <arg name="uri2" default="radio://0/120/2M/0xE7E7E7E710" />
+  <!--arg name="uri3" default="radio://0/80/2M/0xE7E7E7E706" /-->
+
+  <arg name="frame" default="/world" />
+  <arg name="ip" default="192.168.1.2" />
+  <!--arg name="ip" default="192.168.1.104" /-->
+  <arg name="port" default="22222" />
+
+  
+
+  <!--arg name="cf_names_arg" value="CF1,CF2,CF3" /-->
+  <arg name="cf_names_arg" value="CF2" />
+  <param name="cf_names" value="$(arg cf_names_arg)" />
+
+
+  <!--arg name="cf_names_arg" value="CF1,CF2,CF3" /-->
+  <arg name="cf_names_arg2" value="CF1" />
+  <param name="cf_names2" value="$(arg cf_names_arg2)" />
+
+
+  <arg name="cf_jobs_arg" value="2,3,1" />
+  <!--arg name="cf_jobs_arg" value="2,2,1" /-->
+  <param name="cf_jobs" value="$(arg cf_jobs_arg)" />
+
+
+  <param name="work_width" value="4" />
+  <param name="work_length" value="5" />
+
+
+    <!--remap from="/CF2/CF2/external_position" to="external_position" />
+    <remap from="/CF2/CF2/lost_frames" to="lost_frames" /-->
+    <node name="cf_qualisys_node" pkg="crazyflie_scripts" type="qualisys_cf_stream_hanger.py" output="screen">
+      <param name="ip" value="$(arg ip)" />
+    </node>
+
+
+
+
+</launch>

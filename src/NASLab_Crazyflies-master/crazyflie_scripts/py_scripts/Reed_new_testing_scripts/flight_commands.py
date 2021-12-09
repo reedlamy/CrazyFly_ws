@@ -153,15 +153,15 @@ def flight_commands(cf, num_chargers, bt):
 
 
     # Basic hovering - Recruiting Script 1
-    cf.takeoff(0.4,2)
+    cf.takeoff(0.4,1)
     # cf.hover(5)
     # cf.move(0, 0, 0.3, 0)
     print('take off complete')
     cf.hover(2)
-    print('YAWING')
-    cf.goTo(0, 0, 0.4, 90, cf.cf_num)
-    print('Done Yawing')
-    cf.hover(6)
+    #print('YAWING')
+    #cf.goTo(0, 0, 0.4, 90, cf.cf_num)
+    #print('Done Yawing')
+    #cf.hover(6)
     print('landing')
     # cf.move(0, -0.5, 0, 0)
     # cf.hover(5)
