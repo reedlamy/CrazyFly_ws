@@ -8,18 +8,20 @@ import struct
 
 
 class camera_msg(genpy.Message):
-  _md5sum = "0528b01776a9faff38d86476b22e6f80"
+  _md5sum = "512cd6d5f46f8407166dee36dcd1fc07"
   _type = "crazyflie_scripts/camera_msg"
   _has_header = False  # flag to mark the presence of a Header object
-  _full_text = """int32 ext_x
-int32 ext_y
-int32 t_x
-int32 t_y
-int32 x_dir_tt
-int32 y_dir_tt
+  _full_text = """float32 ext_x_cam
+float32 ext_y_cam
+float32 track_x
+float32 track_y
+float32 track_z
+float32 x_dir_tt
+float32 y_dir_tt
+float32 tg_yaw_t
 """
-  __slots__ = ['ext_x','ext_y','t_x','t_y','x_dir_tt','y_dir_tt']
-  _slot_types = ['int32','int32','int32','int32','int32','int32']
+  __slots__ = ['ext_x_cam','ext_y_cam','track_x','track_y','track_z','x_dir_tt','y_dir_tt','tg_yaw_t']
+  _slot_types = ['float32','float32','float32','float32','float32','float32','float32','float32']
 
   def __init__(self, *args, **kwds):
     """
@@ -29,7 +31,7 @@ int32 y_dir_tt
     changes.  You cannot mix in-order arguments and keyword arguments.
 
     The available fields are:
-       ext_x,ext_y,t_x,t_y,x_dir_tt,y_dir_tt
+       ext_x_cam,ext_y_cam,track_x,track_y,track_z,x_dir_tt,y_dir_tt,tg_yaw_t
 
     :param args: complete set of field values, in .msg order
     :param kwds: use keyword arguments corresponding to message field names
@@ -38,25 +40,31 @@ int32 y_dir_tt
     if args or kwds:
       super(camera_msg, self).__init__(*args, **kwds)
       # message fields cannot be None, assign default values for those that are
-      if self.ext_x is None:
-        self.ext_x = 0
-      if self.ext_y is None:
-        self.ext_y = 0
-      if self.t_x is None:
-        self.t_x = 0
-      if self.t_y is None:
-        self.t_y = 0
+      if self.ext_x_cam is None:
+        self.ext_x_cam = 0.
+      if self.ext_y_cam is None:
+        self.ext_y_cam = 0.
+      if self.track_x is None:
+        self.track_x = 0.
+      if self.track_y is None:
+        self.track_y = 0.
+      if self.track_z is None:
+        self.track_z = 0.
       if self.x_dir_tt is None:
-        self.x_dir_tt = 0
+        self.x_dir_tt = 0.
       if self.y_dir_tt is None:
-        self.y_dir_tt = 0
+        self.y_dir_tt = 0.
+      if self.tg_yaw_t is None:
+        self.tg_yaw_t = 0.
     else:
-      self.ext_x = 0
-      self.ext_y = 0
-      self.t_x = 0
-      self.t_y = 0
-      self.x_dir_tt = 0
-      self.y_dir_tt = 0
+      self.ext_x_cam = 0.
+      self.ext_y_cam = 0.
+      self.track_x = 0.
+      self.track_y = 0.
+      self.track_z = 0.
+      self.x_dir_tt = 0.
+      self.y_dir_tt = 0.
+      self.tg_yaw_t = 0.
 
   def _get_types(self):
     """
@@ -71,7 +79,7 @@ int32 y_dir_tt
     """
     try:
       _x = self
-      buff.write(_get_struct_6i().pack(_x.ext_x, _x.ext_y, _x.t_x, _x.t_y, _x.x_dir_tt, _x.y_dir_tt))
+      buff.write(_get_struct_8f().pack(_x.ext_x_cam, _x.ext_y_cam, _x.track_x, _x.track_y, _x.track_z, _x.x_dir_tt, _x.y_dir_tt, _x.tg_yaw_t))
     except struct.error as se: self._check_types(struct.error("%s: '%s' when writing '%s'" % (type(se), str(se), str(locals().get('_x', self)))))
     except TypeError as te: self._check_types(ValueError("%s: '%s' when writing '%s'" % (type(te), str(te), str(locals().get('_x', self)))))
 
@@ -85,8 +93,8 @@ int32 y_dir_tt
       end = 0
       _x = self
       start = end
-      end += 24
-      (_x.ext_x, _x.ext_y, _x.t_x, _x.t_y, _x.x_dir_tt, _x.y_dir_tt,) = _get_struct_6i().unpack(str[start:end])
+      end += 32
+      (_x.ext_x_cam, _x.ext_y_cam, _x.track_x, _x.track_y, _x.track_z, _x.x_dir_tt, _x.y_dir_tt, _x.tg_yaw_t,) = _get_struct_8f().unpack(str[start:end])
       return self
     except struct.error as e:
       raise genpy.DeserializationError(e)  # most likely buffer underfill
@@ -100,7 +108,7 @@ int32 y_dir_tt
     """
     try:
       _x = self
-      buff.write(_get_struct_6i().pack(_x.ext_x, _x.ext_y, _x.t_x, _x.t_y, _x.x_dir_tt, _x.y_dir_tt))
+      buff.write(_get_struct_8f().pack(_x.ext_x_cam, _x.ext_y_cam, _x.track_x, _x.track_y, _x.track_z, _x.x_dir_tt, _x.y_dir_tt, _x.tg_yaw_t))
     except struct.error as se: self._check_types(struct.error("%s: '%s' when writing '%s'" % (type(se), str(se), str(locals().get('_x', self)))))
     except TypeError as te: self._check_types(ValueError("%s: '%s' when writing '%s'" % (type(te), str(te), str(locals().get('_x', self)))))
 
@@ -115,8 +123,8 @@ int32 y_dir_tt
       end = 0
       _x = self
       start = end
-      end += 24
-      (_x.ext_x, _x.ext_y, _x.t_x, _x.t_y, _x.x_dir_tt, _x.y_dir_tt,) = _get_struct_6i().unpack(str[start:end])
+      end += 32
+      (_x.ext_x_cam, _x.ext_y_cam, _x.track_x, _x.track_y, _x.track_z, _x.x_dir_tt, _x.y_dir_tt, _x.tg_yaw_t,) = _get_struct_8f().unpack(str[start:end])
       return self
     except struct.error as e:
       raise genpy.DeserializationError(e)  # most likely buffer underfill
@@ -125,9 +133,9 @@ _struct_I = genpy.struct_I
 def _get_struct_I():
     global _struct_I
     return _struct_I
-_struct_6i = None
-def _get_struct_6i():
-    global _struct_6i
-    if _struct_6i is None:
-        _struct_6i = struct.Struct("<6i")
-    return _struct_6i
+_struct_8f = None
+def _get_struct_8f():
+    global _struct_8f
+    if _struct_8f is None:
+        _struct_8f = struct.Struct("<8f")
+    return _struct_8f

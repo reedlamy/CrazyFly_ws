@@ -24,42 +24,52 @@ struct camera_msg_
   typedef camera_msg_<ContainerAllocator> Type;
 
   camera_msg_()
-    : ext_x(0)
-    , ext_y(0)
-    , t_x(0)
-    , t_y(0)
-    , x_dir_tt(0)
-    , y_dir_tt(0)  {
+    : ext_x_cam(0.0)
+    , ext_y_cam(0.0)
+    , track_x(0.0)
+    , track_y(0.0)
+    , track_z(0.0)
+    , x_dir_tt(0.0)
+    , y_dir_tt(0.0)
+    , tg_yaw_t(0.0)  {
     }
   camera_msg_(const ContainerAllocator& _alloc)
-    : ext_x(0)
-    , ext_y(0)
-    , t_x(0)
-    , t_y(0)
-    , x_dir_tt(0)
-    , y_dir_tt(0)  {
+    : ext_x_cam(0.0)
+    , ext_y_cam(0.0)
+    , track_x(0.0)
+    , track_y(0.0)
+    , track_z(0.0)
+    , x_dir_tt(0.0)
+    , y_dir_tt(0.0)
+    , tg_yaw_t(0.0)  {
   (void)_alloc;
     }
 
 
 
-   typedef int32_t _ext_x_type;
-  _ext_x_type ext_x;
+   typedef float _ext_x_cam_type;
+  _ext_x_cam_type ext_x_cam;
 
-   typedef int32_t _ext_y_type;
-  _ext_y_type ext_y;
+   typedef float _ext_y_cam_type;
+  _ext_y_cam_type ext_y_cam;
 
-   typedef int32_t _t_x_type;
-  _t_x_type t_x;
+   typedef float _track_x_type;
+  _track_x_type track_x;
 
-   typedef int32_t _t_y_type;
-  _t_y_type t_y;
+   typedef float _track_y_type;
+  _track_y_type track_y;
 
-   typedef int32_t _x_dir_tt_type;
+   typedef float _track_z_type;
+  _track_z_type track_z;
+
+   typedef float _x_dir_tt_type;
   _x_dir_tt_type x_dir_tt;
 
-   typedef int32_t _y_dir_tt_type;
+   typedef float _y_dir_tt_type;
   _y_dir_tt_type y_dir_tt;
+
+   typedef float _tg_yaw_t_type;
+  _tg_yaw_t_type tg_yaw_t;
 
 
 
@@ -90,12 +100,14 @@ return s;
 template<typename ContainerAllocator1, typename ContainerAllocator2>
 bool operator==(const ::crazyflie_scripts::camera_msg_<ContainerAllocator1> & lhs, const ::crazyflie_scripts::camera_msg_<ContainerAllocator2> & rhs)
 {
-  return lhs.ext_x == rhs.ext_x &&
-    lhs.ext_y == rhs.ext_y &&
-    lhs.t_x == rhs.t_x &&
-    lhs.t_y == rhs.t_y &&
+  return lhs.ext_x_cam == rhs.ext_x_cam &&
+    lhs.ext_y_cam == rhs.ext_y_cam &&
+    lhs.track_x == rhs.track_x &&
+    lhs.track_y == rhs.track_y &&
+    lhs.track_z == rhs.track_z &&
     lhs.x_dir_tt == rhs.x_dir_tt &&
-    lhs.y_dir_tt == rhs.y_dir_tt;
+    lhs.y_dir_tt == rhs.y_dir_tt &&
+    lhs.tg_yaw_t == rhs.tg_yaw_t;
 }
 
 template<typename ContainerAllocator1, typename ContainerAllocator2>
@@ -152,12 +164,12 @@ struct MD5Sum< ::crazyflie_scripts::camera_msg_<ContainerAllocator> >
 {
   static const char* value()
   {
-    return "0528b01776a9faff38d86476b22e6f80";
+    return "512cd6d5f46f8407166dee36dcd1fc07";
   }
 
   static const char* value(const ::crazyflie_scripts::camera_msg_<ContainerAllocator>&) { return value(); }
-  static const uint64_t static_value1 = 0x0528b01776a9faffULL;
-  static const uint64_t static_value2 = 0x38d86476b22e6f80ULL;
+  static const uint64_t static_value1 = 0x512cd6d5f46f8407ULL;
+  static const uint64_t static_value2 = 0x166dee36dcd1fc07ULL;
 };
 
 template<class ContainerAllocator>
@@ -176,12 +188,14 @@ struct Definition< ::crazyflie_scripts::camera_msg_<ContainerAllocator> >
 {
   static const char* value()
   {
-    return "int32 ext_x\n"
-"int32 ext_y\n"
-"int32 t_x\n"
-"int32 t_y\n"
-"int32 x_dir_tt\n"
-"int32 y_dir_tt\n"
+    return "float32 ext_x_cam\n"
+"float32 ext_y_cam\n"
+"float32 track_x\n"
+"float32 track_y\n"
+"float32 track_z\n"
+"float32 x_dir_tt\n"
+"float32 y_dir_tt\n"
+"float32 tg_yaw_t\n"
 ;
   }
 
@@ -200,12 +214,14 @@ namespace serialization
   {
     template<typename Stream, typename T> inline static void allInOne(Stream& stream, T m)
     {
-      stream.next(m.ext_x);
-      stream.next(m.ext_y);
-      stream.next(m.t_x);
-      stream.next(m.t_y);
+      stream.next(m.ext_x_cam);
+      stream.next(m.ext_y_cam);
+      stream.next(m.track_x);
+      stream.next(m.track_y);
+      stream.next(m.track_z);
       stream.next(m.x_dir_tt);
       stream.next(m.y_dir_tt);
+      stream.next(m.tg_yaw_t);
     }
 
     ROS_DECLARE_ALLINONE_SERIALIZER
@@ -224,18 +240,22 @@ struct Printer< ::crazyflie_scripts::camera_msg_<ContainerAllocator> >
 {
   template<typename Stream> static void stream(Stream& s, const std::string& indent, const ::crazyflie_scripts::camera_msg_<ContainerAllocator>& v)
   {
-    s << indent << "ext_x: ";
-    Printer<int32_t>::stream(s, indent + "  ", v.ext_x);
-    s << indent << "ext_y: ";
-    Printer<int32_t>::stream(s, indent + "  ", v.ext_y);
-    s << indent << "t_x: ";
-    Printer<int32_t>::stream(s, indent + "  ", v.t_x);
-    s << indent << "t_y: ";
-    Printer<int32_t>::stream(s, indent + "  ", v.t_y);
+    s << indent << "ext_x_cam: ";
+    Printer<float>::stream(s, indent + "  ", v.ext_x_cam);
+    s << indent << "ext_y_cam: ";
+    Printer<float>::stream(s, indent + "  ", v.ext_y_cam);
+    s << indent << "track_x: ";
+    Printer<float>::stream(s, indent + "  ", v.track_x);
+    s << indent << "track_y: ";
+    Printer<float>::stream(s, indent + "  ", v.track_y);
+    s << indent << "track_z: ";
+    Printer<float>::stream(s, indent + "  ", v.track_z);
     s << indent << "x_dir_tt: ";
-    Printer<int32_t>::stream(s, indent + "  ", v.x_dir_tt);
+    Printer<float>::stream(s, indent + "  ", v.x_dir_tt);
     s << indent << "y_dir_tt: ";
-    Printer<int32_t>::stream(s, indent + "  ", v.y_dir_tt);
+    Printer<float>::stream(s, indent + "  ", v.y_dir_tt);
+    s << indent << "tg_yaw_t: ";
+    Printer<float>::stream(s, indent + "  ", v.tg_yaw_t);
   }
 };
 

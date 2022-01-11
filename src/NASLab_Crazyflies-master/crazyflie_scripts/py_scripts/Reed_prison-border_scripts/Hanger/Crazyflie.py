@@ -72,6 +72,12 @@ class Crazyflie:
         self.t_x = 0
         self.tg_yaw_t = 0
         self.tracker_flag = 0
+        self.ext_x_cam = 0
+        self.ext_y_cam = 0
+        self.track_x = 0
+        self.track_y = 0
+        self.track_z = 0
+        self.tg_yaw_t = 0
 
         # Space limits (avoid leaving Qualisys MoCap System FOV)
         bound_tol = 0.5  # To account for slight overshoots
@@ -197,7 +203,7 @@ class Crazyflie:
         #self.pub = rospy.Publisher("cmd_position", Position, queue_size=2)
 
         # Initialize publisher for camera node
-        self.pub_adv = rospy.Publisher("camera_data",camera_msg, queue_size = 1)
+        self.pub_adv = rospy.Publisher("camera_data_1",camera_msg, queue_size = 1)
 
         # Initial msg
         # Position (crazyflie_driver): Header header; float32 x; float32 y; float32 z; float32 yaw
@@ -1521,35 +1527,42 @@ class Crazyflie:
         self.tracker_flag = 1
 
 
+        # publish info needed for net drone
+        self.camera_pub_callback(self.ext_x,self.ext_y,self.track_x,self.track_y,self.track_z,self.x_dir_tt,self.y_dir_tt,self.tg_yaw_t)
+
         self.goTo(tg_x_t, tg_y_t, tg_z_t,self.tg_yaw_t, num, sync=False)
 
-        # publish info needed for net drone
-        self.camera_pub_callback()
 
-        self.hover(4)
+
+        self.hover(10)
         self.land()
 
-    def camera_pub_callback(self):
+    def camera_pub_callback(self,ext_x,ext_y,track_x,track_y,track_z,x_dir_tt,y_dir_tt,tg_yaw_t):
         location_info = camera_msg()
         rate = self.rate
 
-        location_info.ext_x = int(self.ext_x)
-        location_info.ext_y = int(self.ext_y)
-        location_info.t_x = int(self.t_x)
-        location_info.t_y = int(self.t_y)
-        location_info.x_dir_tt = int(self.x_dir_tt)
-        location_info.y_dir_tt = int(self.y_dir_tt)
+        location_info.ext_x_cam = ext_x
+        location_info.ext_y_cam = ext_y
+        location_info.track_x = track_x
+        location_info.track_y = track_y
+        location_info.track_z = track_z
+        location_info.x_dir_tt = x_dir_tt
+        location_info.y_dir_tt = y_dir_tt
+        location_info.tg_yaw_t = tg_yaw_t
 
         self.pub_adv.publish(location_info)
         rate.sleep()
 
     def camera_sub_callback(self,data):
-        self.ext_x = data.ext_x
-        self.ext_y = data.ext_y
-        self.t_x = data.t_x
-        self.t_y = data.t_y
+        self.ext_x_cam = data.ext_x_cam
+        self.ext_y_cam = data.ext_y_cam
+        self.track_x = data.track_x
+        self.track_y = data.track_y
+        self.track_z = data.track_z
         self.x_dir_tt = data.x_dir_tt
         self.y_dir_tt = data.y_dir_tt
+        self.tg_yaw_t = data.tg_yaw_t
+
 
         #self.ext_x = track_data[0]
         #self.ext_y = track_data[1]
@@ -1567,18 +1580,19 @@ class Crazyflie:
     def track_object_stationary_net(self,num, tol=0.035):
 
         # subscribe to publishers from crazyflie camera
-        rospy.Subscriber("camera_data",camera_msg,self.camera_sub_callback)
-        rospy.Subscriber("/global_adv", PointStamped, self.adversary_sub_callback)
+        rospy.Subscriber("camera_data_1",camera_msg,self.camera_sub_callback)
+        #rospy.Subscriber("/global_adv", PointStamped, self.adversary_sub_callback)
 
 
         self.takeoff(0.5,num)
         self.hover(1)
 
-
+        print("net external")
+        print([self.ext_x,self.ext_y])
         # get vectors to target and net from camera (to decide orientation of net launcher target)
         # already have from tracker to target - x_dir_tt and y_dir_tt, just need tracker to net
-        x_dir_tn = self.ext_x - self.t_x
-        y_dir_tn = self.ext_y - self.t_y
+        x_dir_tn = self.ext_x - self.ext_x_cam
+        y_dir_tn = self.ext_y - self.ext_y_cam
 
         opt_dist_n_h = 0.75  # optimal horizontal distance for net launcher
         opt_dist_n_v = 0.1  # optimal vertical distance for net launcher
@@ -1616,6 +1630,9 @@ class Crazyflie:
 
         tg_yaw_n = math.degrees(math.atan(-n_ymod / -n_xmod)) + yaw_mod2 + net_offset
 
+        print("net goto")
+        print([tg_x_n, tg_y_n, tg_z_n, tg_yaw_n])
+
         self.goTo(tg_x_n, tg_y_n, tg_z_n, tg_yaw_n, num, sync=False)
 
         self.hover(6)
@@ -1624,7 +1641,7 @@ class Crazyflie:
     def track_object_stationary_net_test(self,num, tol=0.035):
 
         # subscribe to publisher from crazyflie camera
-        #rospy.Subscriber("camera_data",camera_msg,self.camera_sub_callback)
+        #rospy.Subscriber("camera_data_1",camera_msg,self.camera_sub_callback)
         rospy.Subscriber("/global_adv", PointStamped, self.adversary_sub_callback)
 
         rate = self.rate

@@ -34,16 +34,18 @@ import Crazyflie
 # take net drone info and pass info down to low level control
 
 def circle_1_init(cf,cf_num,x,y,z,cf_spotted,stop_threads,ad_flag=False): # ad_flag is advisory flag
-    i = 500 # not needed, used for testing, can be set to 0
+    i = 0 # not needed, used for testing, can be set to 0
     cf.takeoff(0.4,cf_num)
-    cf.hover(3) # wait for drone to stabilize, take off can be sketchy occasionally
+    cf.hover(1) # wait for drone to stabilize, take off can be sketchy occasionally
 
     while not stop_threads():
         t = i/3
-        rad = math.fmod(t,math.pi)
-        rad = (rad+math.pi) % (2*math.pi) - math.pi # radians used for sinusoidal functions to create circle pattern, changes each step
+        rad = math.fmod(t,2*math.pi)
+        rad = rad+math.pi/2
+        if rad > math.pi:
+            rad = rad - 2*math.pi
         #drone = [0.75*math.cos(t)+x,0.75*math.sin(t)+y,z,math.degrees(rad),cf_num]
-        cf.goTo(0.75*math.cos(t)+x,0.75*math.sin(t)+y,z,math.degrees(rad)-90,cf_num) #
+        cf.goTo(0.4*math.cos(t)+x,0.4*math.sin(t)+y,z,math.degrees(rad),cf_num) #
         i += 1
 
 
@@ -66,7 +68,7 @@ def circle_2_init(cf,cf_nums,cf_num,x,y,z,bt,cf_spotted,stop_threads,ad_flag=Fal
 
     while not stop_threads():  # same thing as above function, but with pair of drones so need two separate radian values pi radians separate from each other (opposite sides of local circle)
         t = i/3
-        rad = math.fmod(t,math.pi)
+        rad = math.fmod(t,2*math.pi)
 
         radius = 0.4 # Radius of inner circle
         rad1 = (rad+math.pi) % (2*math.pi) - math.pi
@@ -89,6 +91,7 @@ def circle_2_init(cf,cf_nums,cf_num,x,y,z,bt,cf_spotted,stop_threads,ad_flag=Fal
 
 def track_object(cf,cf_num,camera_number):
 
+    time.sleep(3)
 
     cf.track_object_stationary_net(cf_num)
 
@@ -97,19 +100,15 @@ def testing(cf,cf_num,bt,cf_spotted,stop_threads,ad_flag=False):
 
     i = 0
 
-    cf.takeoff(0.4,cf_num)
-    cf.hover(1)
+    #cf.takeoff(0.4,cf_num)
+    #cf.hover(1)
 
     while not stop_threads:
-        cf.hover(1)
-
-    # exit conditions
-
-    if cf_num == cf_spotted():
-        cf.track_object_stationary_camera(cf_num)
+        #cf.hover(1)
+        i+=1
 
 
-    elif stop_threads() and cf_num != cf_spotted():
+    if stop_threads() and cf_num != cf_spotted():
         cf.land()
 
 

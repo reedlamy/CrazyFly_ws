@@ -13,7 +13,7 @@
   <!--arg name="uri3" default="radio://0/80/2M/0xE7E7E7E706" /-->
 
   <arg name="frame" default="/world" />
-  <arg name="ip" default="192.168.1.2" />
+  <arg name="ip" default="192.168.1.118" />
   <!--arg name="ip" default="192.168.1.104" /-->
   <arg name="port" default="22222" />
 

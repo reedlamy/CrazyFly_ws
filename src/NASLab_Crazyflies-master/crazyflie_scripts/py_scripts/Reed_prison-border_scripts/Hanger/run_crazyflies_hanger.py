@@ -292,8 +292,8 @@ if __name__ == '__main__':
             t.append(Thread(target=circle_2_init, args=(group_2[0][i][1],group_2[1][i], group_2[1][i][1], cent_pos[i][0], cent_pos[i][1], 0.5,bt,lambda: cf_spotted,lambda: stop_threads),daemon=True))
             #circle_2(group_2[0][i][0],group_2[0][i][1],cent_pos[i][0],cent_pos[i][1],0.5)
     else:
-        #t.append(Thread(target=circle_1_init, args=(group_1[0][0],group_1[1][0],cent_pos[0][0],cent_pos[0][1],0.5,lambda: cf_spotted,lambda: stop_threads),daemon=True))
-        t.append(Thread(target=circle_1_init, args=(group_1[0][0],group_1[1][0],cent_pos[0][0],-3,0.5,lambda: cf_spotted,lambda: stop_threads),daemon=True))
+        t.append(Thread(target=circle_1_init, args=(group_1[0][0],group_1[1][0],cent_pos[0][0],cent_pos[0][1],0.5,lambda: cf_spotted,lambda: stop_threads),daemon=True))
+        #t.append(Thread(target=circle_1_init, args=(group_1[0][0],group_1[1][0],cent_pos[0][0],-3,0.5,lambda: cf_spotted,lambda: stop_threads),daemon=True))
         #circle_1(group_1[0][0],cent_pos[0][0],cent_pos[0][1],0.5)
         for i in range(0,len(group_2[0])-1):
             t.append(Thread(target=circle_2_init, args=(group_2[0][i][0],group_2[1][i],group_2[1][i][0],cent_pos[i+1][0],cent_pos[i+1][1],[1],0.5,bt,lambda: cf_spotted,lambda: stop_threads),daemon=True))
