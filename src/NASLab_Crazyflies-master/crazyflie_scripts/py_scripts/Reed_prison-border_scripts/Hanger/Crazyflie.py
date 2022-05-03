@@ -84,8 +84,8 @@ class Crazyflie:
         self.zbounds = [0.0, 2.5]
         #work_width = rospy.get_param("work_width")
         #work_length = rospy.get_param("work_length")
-        work_width = 10
-        work_length = 10
+        work_width = 15
+        work_length = 15
 
         self.xbounds = [-work_width/2 - bound_tol, work_width/2 + bound_tol]
         self.ybounds = [-work_length/2 - bound_tol, work_length/2 + bound_tol]
@@ -428,6 +428,7 @@ class Crazyflie:
 
 
             self.update_params.close()
+
 
             ###############################################################
             ############################################################################
@@ -1486,10 +1487,10 @@ class Crazyflie:
         # Get global x, y and z from detection node, and drone that tracked it
         rospy.Subscriber("/global_adv", PointStamped, self.adversary_sub_callback)
 
-        self.hover(3) # wait for subscribers to get started
+        self.hover(2) # wait for subscribers to get started
 
         # finding x,y,and z position to go to
-        opt_dist_t = 0.75  # optimal radius for camera for continuous tracking
+        opt_dist_t = 1.2  # optimal radius for camera for continuous tracking
 
 
         # This is used later with other code, resetting name to be safe
@@ -1534,7 +1535,7 @@ class Crazyflie:
 
 
 
-        self.hover(10)
+        self.hover(7)
         self.land()
 
     def camera_pub_callback(self,ext_x,ext_y,track_x,track_y,track_z,x_dir_tt,y_dir_tt,tg_yaw_t):
@@ -1584,18 +1585,16 @@ class Crazyflie:
         #rospy.Subscriber("/global_adv", PointStamped, self.adversary_sub_callback)
 
 
-        self.takeoff(0.5,num)
+        self.takeoff(0.4,num)
         self.hover(1)
 
-        print("net external")
-        print([self.ext_x,self.ext_y])
         # get vectors to target and net from camera (to decide orientation of net launcher target)
         # already have from tracker to target - x_dir_tt and y_dir_tt, just need tracker to net
         x_dir_tn = self.ext_x - self.ext_x_cam
         y_dir_tn = self.ext_y - self.ext_y_cam
 
-        opt_dist_n_h = 0.75  # optimal horizontal distance for net launcher
-        opt_dist_n_v = 0.1  # optimal vertical distance for net launcher
+        opt_dist_n_h = 1.5  # optimal horizontal distance for net launcher
+        opt_dist_n_v = -0.1  # optimal vertical distance for net launcher
         net_offset = 0  # offset (degrees) of direction of net launcher from crazyflie defined forward direction
 
         #take cross product to understand orientation
@@ -1630,12 +1629,10 @@ class Crazyflie:
 
         tg_yaw_n = math.degrees(math.atan(-n_ymod / -n_xmod)) + yaw_mod2 + net_offset
 
-        print("net goto")
-        print([tg_x_n, tg_y_n, tg_z_n, tg_yaw_n])
 
         self.goTo(tg_x_n, tg_y_n, tg_z_n, tg_yaw_n, num, sync=False)
 
-        self.hover(6)
+        self.hover(10)
         self.land()
 
     def track_object_stationary_net_test(self,num, tol=0.035):

@@ -292,8 +292,8 @@ if __name__ == '__main__':
             t.append(Thread(target=circle_2_init, args=(group_2[0][i][1],group_2[1][i], group_2[1][i][1], cent_pos[i][0], cent_pos[i][1], 0.5,bt,lambda: cf_spotted,lambda: stop_threads),daemon=True))
             #circle_2(group_2[0][i][0],group_2[0][i][1],cent_pos[i][0],cent_pos[i][1],0.5)
     else:
-        t.append(Thread(target=circle_1_init, args=(group_1[0][0],group_1[1][0],cent_pos[0][0],cent_pos[0][1],0.5,lambda: cf_spotted,lambda: stop_threads),daemon=True))
-        #t.append(Thread(target=circle_1_init, args=(group_1[0][0],group_1[1][0],cent_pos[0][0],-3,0.5,lambda: cf_spotted,lambda: stop_threads),daemon=True))
+        #t.append(Thread(target=circle_1_init, args=(group_1[0][0],group_1[1][0],cent_pos[0][0],cent_pos[0][1],0.5,lambda: cf_spotted,lambda: stop_threads),daemon=True))
+        t.append(Thread(target=circle_1_init, args=(group_1[0][0],group_1[1][0],cent_pos[0][0],-3.4,0.5,lambda: cf_spotted,lambda: stop_threads),daemon=True))
         #circle_1(group_1[0][0],cent_pos[0][0],cent_pos[0][1],0.5)
         for i in range(0,len(group_2[0])-1):
             t.append(Thread(target=circle_2_init, args=(group_2[0][i][0],group_2[1][i],group_2[1][i][0],cent_pos[i+1][0],cent_pos[i+1][1],[1],0.5,bt,lambda: cf_spotted,lambda: stop_threads),daemon=True))
@@ -337,7 +337,7 @@ if __name__ == '__main__':
                 if flag == 1: # if actual spotting made, assign camera drone to stay in the air
                     #tracker_inst = group_2[0][0][0]
                     #cf_spotted = group_2[1][0][0]
-                    cf_spotted = cam_id # published by detection node
+                    cf_spotted = 1 #cam_id # published by detection node
                     stop_threads = True  # condition to stop all threads and land drones
 
                     #Find closest net launcher ###############################################################################################################################
@@ -357,7 +357,7 @@ if __name__ == '__main__':
                     #    else:
                     #        net = net-1
 
-
+                    print("I got here")
                     #t1.append(Thread(target=track_object, args=(job_1[0][0], job_1[1][0], cf_spotted), daemon=True)) # launch net drone
                     t1.append(Thread(target=track_object, args=(job_1[0][net], job_1[1][net], cf_spotted), daemon=True)) ############################################
 

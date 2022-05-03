@@ -85,7 +85,7 @@ async def main():
 
             # Check if actual position should start to be recorded
             #if start_record:
-            if False:
+            if True:
                 # Store actual position for each Crazyflie (open and close in case of abrupt ending (CTRL+C)
                 x_pos = [bodies[wanted_indices[i]][0][0] / 1000 for i in range(len(wanted_indices))]
                 y_pos = [bodies[wanted_indices[i]][0][1] / 1000 for i in range(len(wanted_indices))]
@@ -238,7 +238,7 @@ if __name__ == "__main__":
     tracking_frames_thresh = 10  # 4  # Need to send Crazyflie a position update within every 0.5 seconds
 
 
-    #log_location = '/home/reed/Crazyfly_ws/src/NASLab_Crazyflies/crazyflie_scripts/static_cf_actual_pos_logs/'
+    log_location = '/home/reed/CrazyFly_ws/src/NASLab_Crazyflies-master/crazyflie_scripts/static_cf_actual_pos_logs/'
 
     now = datetime.now()
     dt_string = now.strftime("%m-%d-%Y_%H:%M")
@@ -248,9 +248,9 @@ if __name__ == "__main__":
     csv_header = [None]*(len(csv_xheader)+len(csv_yheader))
     csv_header[::2] = csv_xheader
     csv_header[1::2] = csv_yheader
-    #with open(log_location + 'cf_xy_pos_' + dt_string + '.csv', 'w', newline='') as file:
-        #writer = csv.writer(file, quoting=csv.QUOTE_NONNUMERIC)
-        #writer.writerow(csv_header)
+    with open(log_location + 'cf_xy_pos_' + dt_string + '.csv', 'w', newline='') as file:
+        writer = csv.writer(file, quoting=csv.QUOTE_NONNUMERIC)
+        writer.writerow(csv_header)
 
     # Run asynchronous function until complete
     asyncio.get_event_loop().run_until_complete(main())

@@ -22,7 +22,7 @@
 
 
   <!--arg name="cf_names_arg" value="CF1,CF2,CF3" /-->
-  <arg name="cf_names_arg2" value="CF1,CF3" />
+  <arg name="cf_names_arg2" value="CF1,CF2" />
   <param name="cf_names2" value="$(arg cf_names_arg2)" />
 
 

@@ -22,11 +22,12 @@
 #       track_object_stationary_net(num)  *Note: track detected object (Used for net launcher drones)
 #       track_object_stationary_net(num) *Note:  used for testing, not needed
 
-
+import rospy
 import time
 import math
 from matplotlib import pyplot as plt
 import Crazyflie
+from std_msgs.msg import Int16
 
 
 #Mid level control script
@@ -35,24 +36,32 @@ import Crazyflie
 
 def circle_1_init(cf,cf_num,x,y,z,cf_spotted,stop_threads,ad_flag=False): # ad_flag is advisory flag
     i = 0 # not needed, used for testing, can be set to 0
-    cf.takeoff(0.4,cf_num)
+    cf.takeoff(0.5,cf_num)
     cf.hover(1) # wait for drone to stabilize, take off can be sketchy occasionally
 
-    while not stop_threads():
-        t = i/3
+    #while not stop_threads():
+    while i <= 5:
+        flag = 0
+        pub_flag_callback(flag)
+        t = i/4
         rad = math.fmod(t,2*math.pi)
         rad = rad+math.pi/2
         if rad > math.pi:
             rad = rad - 2*math.pi
         #drone = [0.75*math.cos(t)+x,0.75*math.sin(t)+y,z,math.degrees(rad),cf_num]
-        cf.goTo(0.4*math.cos(t)+x,0.4*math.sin(t)+y,z,math.degrees(rad),cf_num) #
+        cf.goTo(1*math.cos(t)+x,1*math.sin(t)+y,0.5,math.degrees(rad),cf_num)
+        cf.hover(0.5)
         i += 1
 
 
     #exit conditions below
 
-    if cf_num == cf_spotted(): # if camera made detection, stay in air
+    #if cf_num == cf_spotted(): # if camera made detection, stay in air
+    if cf_num == 1:
+        flag = 1
+        pub_flag_callback(flag)
         cf.track_object_stationary_camera(cf_num)
+
 
     elif stop_threads: # otherwise, land camera drone
         cf.land()
@@ -100,16 +109,28 @@ def testing(cf,cf_num,bt,cf_spotted,stop_threads,ad_flag=False):
 
     i = 0
 
-    #cf.takeoff(0.4,cf_num)
-    #cf.hover(1)
+    cf.takeoff(0.5,cf_num)
+    cf.hover(1)
 
-    while not stop_threads:
-        #cf.hover(1)
-        i+=1
+    start_time = time.time()
+
+    cf.goTo(-1.8,-2.3,0.5,0,cf_num)
+
+    while start_time+37 > time.time():
+        cf.hover(1)
 
 
-    if stop_threads() and cf_num != cf_spotted():
-        cf.land()
+    cf.land()
+
+def pub_flag_callback(data1):
+    pub_flag = rospy.Publisher("Intruder_flag", Int16, queue_size=1)
+    flag1 = Int16()
+    rate2 = rospy.Rate(5)
+
+    flag1.data = data1
+
+    pub_flag.publish(flag1)
+    rate2.sleep()
 
 
 
